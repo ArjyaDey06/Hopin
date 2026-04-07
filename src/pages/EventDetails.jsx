@@ -1,0 +1,303 @@
+import { useEffect, useState } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import { supabase } from '../supabaseClient';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+  Users, CheckCircle, Clock, QrCode, ArrowLeft,
+  FileText, Share2, MessageSquare, Star, Trash2
+} from 'lucide-react';
+
+const EventDetails = () => {
+  const { id } = useParams();
+  const navigate = useNavigate();
+  const [event, setEvent] = useState(null);
+  const [attendees, setAttendees] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [closing, setClosing] = useState(false);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+
+  useEffect(() => {
+    fetchEventAndAttendees();
+    
+    // Real-time subscription for attendance updates
+    const subscription = supabase
+      .channel('attendance-updates')
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'registrations', filter: `event_id=eq.${id}` }, 
+        payload => {
+          setAttendees(prev => prev.map(a => a.id === payload.new.id ? payload.new : a));
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(subscription);
+    };
+  }, [id]);
+
+  const fetchEventAndAttendees = async () => {
+    const [eventRes, attendeeRes] = await Promise.all([
+      supabase.from('events').select('*').eq('id', id).single(),
+      supabase.from('registrations').select('*').eq('event_id', id).order('created_at', { ascending: false })
+    ]);
+    
+    if (eventRes.data) setEvent(eventRes.data);
+    if (attendeeRes.data) setAttendees(attendeeRes.data);
+    setLoading(false);
+  };
+
+  const closeArrivals = async () => {
+    if (!window.confirm("This will mark all arrived participants as 'Present'. Continue?")) return;
+    setClosing(true);
+    
+    const { error } = await supabase
+      .from('registrations')
+      .update({ present: true })
+      .eq('event_id', id)
+      .eq('arrived', true);
+
+    if (!error) {
+      alert("Arrivals closed and attendance marked!");
+      fetchEventAndAttendees();
+    }
+    setClosing(false);
+  };
+
+  const exportToCSV = () => {
+    const headers = ["Name", "Moodle ID", "Year", "Dept", "Email", "Arrived", "Present"];
+    const rows = attendees.map(a => [
+      a.participant_name, a.moodle_id, a.year, a.department, 
+      a.email, a.arrived ? "Yes" : "No", a.present ? "Yes" : "No"
+    ]);
+    
+    let csvContent = "data:text/csv;charset=utf-8," + headers.join(",") + "\n" + rows.map(e => e.join(",")).join("\n");
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `${event.name}_attendance.csv`);
+    document.body.appendChild(link);
+    link.click();
+  };
+
+  const deleteEvent = async () => {
+    setDeleting(true);
+    const { error } = await supabase.from('events').delete().eq('id', id);
+    if (!error) {
+      navigate('/admin');
+    } else {
+      alert('Delete failed: ' + error.message);
+      setDeleting(false);
+      setShowDeleteModal(false);
+    }
+  };
+
+  const stats = {
+    total: attendees.length,
+    arrived: attendees.filter(a => a.arrived).length,
+    present: attendees.filter(a => a.present).length,
+    feedback: attendees.filter(a => a.feedback_data).length,
+  };
+
+  if (loading) return <div className="container" style={{ padding: '5rem', textAlign: 'center' }}>Loading event data...</div>;
+
+  return (
+    <div className="container" style={{ padding: '3rem 1rem' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <button onClick={() => navigate('/admin')} className="btn btn-ghost">
+          <ArrowLeft size={18} /> Dashboard
+        </button>
+        <div style={{ display: 'flex', gap: '1rem' }}>
+           <button onClick={() => {
+             const url = `${window.location.origin}/event/${id}`;
+             navigator.clipboard.writeText(url);
+             alert("Registration link copied!");
+           }} className="btn btn-ghost"><Share2 size={18} /> Invite Link</button>
+           
+           {event.status === 'finished' ? (
+             <button onClick={() => {
+               const url = `${window.location.origin}/feedback/${id}`;
+               navigator.clipboard.writeText(url);
+               alert("Feedback link copied!");
+             }} className="btn btn-primary" style={{ background: '#c084fc' }}>
+               <MessageSquare size={18} /> Feedback QR
+             </button>
+           ) : (
+             <button onClick={() => navigate(`/admin/scan/${id}`)} className="btn btn-primary" style={{ background: 'var(--accent)' }}>
+               <QrCode size={18} /> Open Scanner
+             </button>
+           )}
+        </div>
+      </div>
+
+      <div className="grid-details" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem', alignItems: 'start' }}>
+        <div>
+          <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass-card" style={{ padding: '2rem', marginBottom: '2rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+               <div>
+                 <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem', marginTop: 0 }}>{event.name}</h1>
+                 <p style={{ color: 'var(--text-muted)' }}>{event.venue} | {new Date(event.event_time).toLocaleString()}</p>
+               </div>
+               <span className={`badge ${event.status === 'finished' ? '' : 'badge-arrived'}`}>{event.status}</span>
+            </div>
+          </motion.div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+            <div className="glass-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+              <Users size={20} className="text-primary" style={{ marginBottom: '0.5rem' }} />
+              <div style={{ fontSize: '1.3rem', fontWeight: 800 }}>{stats.total}</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Registered</div>
+            </div>
+            <div className="glass-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+              <Clock size={20} style={{ color: '#f59e0b', marginBottom: '0.5rem' }} />
+              <div style={{ fontSize: '1.3rem', fontWeight: 800 }}>{stats.arrived}</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Arrived</div>
+            </div>
+            <div className="glass-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+              <CheckCircle size={20} style={{ color: '#10b981', marginBottom: '0.5rem' }} />
+              <div style={{ fontSize: '1.3rem', fontWeight: 800 }}>{stats.present}</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Present</div>
+            </div>
+            <div className="glass-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
+              <MessageSquare size={20} className="text-secondary" style={{ marginBottom: '0.5rem' }} />
+              <div style={{ fontSize: '1.3rem', fontWeight: 800 }}>{stats.feedback}</div>
+              <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Feedback</div>
+            </div>
+          </div>
+
+          <div className="glass-card" style={{ overflow: 'hidden', marginBottom: '2rem' }}>
+            <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+               <h3 style={{ fontSize: '1.2rem', margin: 0 }}>Attendee List</h3>
+               <div style={{ display: 'flex', gap: '0.5rem' }}>
+                 <button onClick={exportToCSV} className="btn-ghost" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><FileText size={14} /> CSV</button>
+                 <button onClick={closeArrivals} disabled={closing || event.status === 'finished'} className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>{closing ? 'Closing...' : 'Close Arrivals'}</button>
+               </div>
+            </div>
+            <div style={{ overflowX: 'auto' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ background: 'rgba(255,255,255,0.02)', fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
+                    <th style={{ padding: '1rem 1.5rem' }}>Participant</th>
+                    <th style={{ padding: '1rem 1.5rem' }}>ID & Dept</th>
+                    <th style={{ padding: '1rem 1.5rem' }}>Status</th>
+                    <th style={{ padding: '1rem 1.5rem' }}>Feedback</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {attendees.map(a => (
+                    <tr key={a.id} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.2s' }}>
+                      <td style={{ padding: '1rem 1.5rem' }}>
+                        <div style={{ fontWeight: 600, color: 'var(--text-h)' }}>{a.participant_name}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{a.email}</div>
+                      </td>
+                      <td style={{ padding: '1rem 1.5rem' }}>
+                        <div>{a.moodle_id}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{a.department} | {a.year}</div>
+                      </td>
+                      <td style={{ padding: '1rem 1.5rem' }}>
+                        {a.arrived ? <span className="badge badge-arrived">Arrived</span> : <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Pending</span>}
+                        {a.present && <CheckCircle size={14} style={{ color: '#10b981', marginLeft: '0.5rem' }} />}
+                      </td>
+                      <td style={{ padding: '1rem 1.5rem' }}>
+                        {a.feedback_data ? <span style={{ color: '#c084fc', fontSize: '0.8rem' }}><Star size={12} fill="currentColor" /> Rated {a.feedback_data.rating}/5</span> : '-'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {stats.feedback > 0 && (
+            <div className="glass-card" style={{ padding: '1.5rem' }}>
+              <h3 style={{ marginBottom: '1.5rem' }}>Recent Feedback</h3>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {attendees.filter(a => a.feedback_data).slice(0, 5).map((a, i) => (
+                  <div key={i} style={{ padding: '1rem', background: 'var(--bg)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                       <span style={{ fontWeight: 600 }}>{a.participant_name}</span>
+                       <div style={{ display: 'flex', gap: '2px' }}>
+                         {[...Array(a.feedback_data.rating)].map((_, i) => <Star key={i} size={12} fill="var(--accent)" color="var(--accent)" />)}
+                       </div>
+                    </div>
+                    <p style={{ fontSize: '0.9rem', fontStyle: 'italic' }}>"{a.feedback_data.comments}"</p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+
+        <div className="glass-card" style={{ padding: '1.5rem' }}>
+          <h3 style={{ marginBottom: '1rem', marginTop: 0 }}>Event Controls</h3>
+          {event.poster_url && (
+            <img src={event.poster_url} style={{ width: '100%', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', maxHeight: '220px', objectFit: 'cover' }} alt="Poster" />
+          )}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            <button onClick={async () => {
+              if (window.confirm("Finish this event? Students will be able to submit feedback.")) {
+                await supabase.from('events').update({ status: 'finished' }).eq('id', id);
+                fetchEventAndAttendees();
+              }
+            }} disabled={event.status === 'finished'} className="btn btn-primary" style={{ width: '100%' }}>
+              {event.status === 'finished' ? '✓ Event Finished' : 'Finish Event'}
+            </button>
+            <button onClick={() => navigate('/admin')} className="btn btn-ghost" style={{ width: '100%' }}>Back to Dashboard</button>
+
+            {/* Danger Zone */}
+            <div style={{ marginTop: '0.5rem', paddingTop: '0.75rem', borderTop: '1px solid var(--border)' }}>
+              <button
+                onClick={() => setShowDeleteModal(true)}
+                style={{ width: '100%', padding: '0.7rem', borderRadius: 'var(--radius-md)', border: '1px solid #ef4444', background: 'transparent', color: '#ef4444', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
+                <Trash2 size={16} /> Delete Event
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Delete Confirmation Modal */}
+      <AnimatePresence>
+        {showDeleteModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1rem' }}
+            onClick={() => setShowDeleteModal(false)}>
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.9, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="glass-card"
+              style={{ maxWidth: '420px', width: '100%', padding: '2rem', textAlign: 'center' }}>
+              <div style={{ width: '56px', height: '56px', borderRadius: '50%', background: 'rgba(239,68,68,0.1)', border: '1px solid rgba(239,68,68,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1.5rem' }}>
+                <Trash2 size={24} color="#ef4444" />
+              </div>
+              <h2 style={{ marginBottom: '0.75rem', marginTop: 0, color: 'var(--text-h)' }}>Delete Event?</h2>
+              <p style={{ color: 'var(--text-muted)', marginBottom: '0.5rem' }}>This will permanently delete <strong style={{ color: 'var(--text-h)' }}>{event.name}</strong>.</p>
+              <p style={{ color: '#ef4444', fontSize: '0.85rem', marginBottom: '2rem' }}>⚠️ All {stats.total} registrations will also be deleted. This cannot be undone.</p>
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button onClick={() => setShowDeleteModal(false)} className="btn btn-ghost" style={{ flex: 1 }}>Cancel</button>
+                <button
+                  onClick={deleteEvent}
+                  disabled={deleting}
+                  style={{ flex: 1, padding: '0.75rem', borderRadius: 'var(--radius-md)', border: 'none', background: '#ef4444', color: 'white', fontWeight: 700, cursor: 'pointer', fontSize: '0.95rem' }}>
+                  {deleting ? 'Deleting…' : 'Yes, Delete'}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <style>{`
+        @media (max-width: 900px) {
+          .grid-details { grid-template-columns: 1fr !important; }
+        }
+      `}</style>
+    </div>
+  );
+};
+
+export default EventDetails;
