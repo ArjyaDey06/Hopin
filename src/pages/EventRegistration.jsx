@@ -126,22 +126,22 @@ const EventRegistration = () => {
           <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             <div>
               <label className="reg-label"><User size={14} /> Full Name</label>
-              <input required className="input" placeholder="Your full name" value={formData.participant_name} onChange={e => setFormData({...formData, participant_name: e.target.value})} />
+              <input required className="input" placeholder="Your full name" value={formData.participant_name} onChange={e => setFormData({ ...formData, participant_name: e.target.value })} />
             </div>
             <div className="two-col-form">
               <div>
                 <label className="reg-label"><Hash size={14} /> Moodle ID</label>
-                <input required className="input" placeholder="23XXXXXX" value={formData.moodle_id} onChange={e => setFormData({...formData, moodle_id: e.target.value})} />
+                <input required className="input" placeholder="23XXXXXX" value={formData.moodle_id} onChange={e => setFormData({ ...formData, moodle_id: e.target.value })} />
               </div>
               <div>
                 <label className="reg-label"><Hash size={14} /> Roll No</label>
-                <input required className="input" placeholder="Roll number" value={formData.roll_no} onChange={e => setFormData({...formData, roll_no: e.target.value})} />
+                <input required className="input" placeholder="Roll number" value={formData.roll_no} onChange={e => setFormData({ ...formData, roll_no: e.target.value })} />
               </div>
             </div>
             <div className="two-col-form">
               <div>
                 <label className="reg-label"><BookOpen size={14} /> Year</label>
-                <select required className="input" value={formData.year} onChange={e => setFormData({...formData, year: e.target.value})}>
+                <select required className="input" value={formData.year} onChange={e => setFormData({ ...formData, year: e.target.value })}>
                   <option value="">Select Year</option>
                   <option value="FE">FE</option>
                   <option value="SE">SE</option>
@@ -151,7 +151,7 @@ const EventRegistration = () => {
               </div>
               <div>
                 <label className="reg-label"><BookOpen size={14} /> Department</label>
-                <select required className="input" value={formData.department} onChange={e => setFormData({...formData, department: e.target.value})}>
+                <select required className="input" value={formData.department} onChange={e => setFormData({ ...formData, department: e.target.value })}>
                   <option value="">Select Dept</option>
                   <option value="H&AS">H&AS</option>
                   <option value="DS">DS</option>
@@ -165,11 +165,11 @@ const EventRegistration = () => {
             </div>
             <div>
               <label className="reg-label"><Mail size={14} /> Email Address</label>
-              <input required type="email" className="input" placeholder="your@email.com" value={formData.email} onChange={e => setFormData({...formData, email: e.target.value})} />
+              <input required type="email" className="input" placeholder="your@email.com" value={formData.email} onChange={e => setFormData({ ...formData, email: e.target.value })} />
             </div>
             <div>
               <label className="reg-label"><Hash size={14} /> Division</label>
-              <select required className="input" style={{ cursor: 'pointer' }} value={formData.division} onChange={e => setFormData({...formData, division: e.target.value})}>
+              <select required className="input" style={{ cursor: 'pointer' }} value={formData.division} onChange={e => setFormData({ ...formData, division: e.target.value })}>
                 <option value="">Select Division</option>
                 {(event.divisions && event.divisions.length > 0
                   ? event.divisions

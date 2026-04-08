@@ -15,7 +15,7 @@ const Navbar = () => {
   const handleLogout = async () => {
     await supabase.auth.signOut();
     setMenuOpen(false);
-    navigate('/login');
+    navigate('/');
   };
 
   const openNameEdit = () => {
