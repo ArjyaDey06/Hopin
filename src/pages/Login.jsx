@@ -3,6 +3,7 @@ import { supabase } from '../supabaseClient';
 import { useNavigate } from 'react-router-dom';
 import { User, Lock, ArrowRight } from 'lucide-react';
 import { motion } from 'framer-motion';
+import BorderBeam from '../components/BorderBeam';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -35,14 +36,15 @@ const Login = () => {
       minHeight: 'calc(100vh - 100px)',
       padding: '2rem'
     }}>
-      <motion.div 
+      <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="glass-card" 
-        style={{ width: '100%', maxWidth: '400px', padding: '2.5rem' }}>
+        className="glass-card"
+        style={{ width: '100%', maxWidth: '350px', padding: '2rem', position: 'relative', overflow: 'hidden' }}>
+        <BorderBeam duration={8} size={120} />
         <h2 style={{ fontSize: '2rem', marginBottom: '0.5rem', textAlign: 'center' }}>Welcome Back</h2>
         <p style={{ color: 'var(--text-muted)', textAlign: 'center', marginBottom: '2rem' }}>Login to manage your events</p>
-        
+
         {error && <div style={{ background: 'rgba(239, 68, 68, 0.1)', color: '#ef4444', padding: '0.75rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', fontSize: '0.9rem' }}>{error}</div>}
 
         <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
@@ -50,30 +52,30 @@ const Login = () => {
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
               <User size={16} /> Email Address
             </label>
-            <input 
-              type="email" 
-              className="input" 
-              placeholder="e.g. 23107062@apsit.edu.in" 
-              value={email} 
+            <input
+              type="email"
+              className="input"
+              placeholder="e.g. 23107062@apsit.edu.in"
+              value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required 
+              required
             />
           </div>
           <div>
             <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem', fontSize: '0.9rem', color: 'var(--text-muted)' }}>
               <Lock size={16} /> Password
             </label>
-            <input 
-              type="password" 
-              className="input" 
-              placeholder="••••••••" 
+            <input
+              type="password"
+              className="input"
+              placeholder="••••••••"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required 
+              required
             />
           </div>
-          <button type="submit" disabled={loading} className="btn btn-primary" style={{ marginTop: '0.5rem' }}>
-            {loading ? 'Logging in...' : 'Sign In'} <ArrowRight size={18} />
+          <button type="submit" disabled={loading} className="btn btn-primary" style={{ marginTop: '0.5rem', width: 'fit-content', marginInline: 'auto', paddingInline: '2rem' }}>
+            {loading ? 'Logging in...' : 'Sign In'}
           </button>
         </form>
       </motion.div>

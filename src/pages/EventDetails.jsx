@@ -4,7 +4,8 @@ import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Users, CheckCircle, Clock, QrCode, ArrowLeft,
-  FileText, Share2, MessageSquare, Star, Trash2
+  FileText, Share2, MessageSquare, Star, Trash2,
+  RefreshCw, Hash, Save, X
 } from 'lucide-react';
 
 const EventDetails = () => {
@@ -13,6 +14,10 @@ const EventDetails = () => {
   const [event, setEvent] = useState(null);
   const [attendees, setAttendees] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [isEditingCapacity, setIsEditingCapacity] = useState(false);
+  const [tempCapacity, setTempCapacity] = useState('');
+  const [updatingCapacity, setUpdatingCapacity] = useState(false);
   const [closing, setClosing] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
@@ -36,14 +41,37 @@ const EventDetails = () => {
   }, [id]);
 
   const fetchEventAndAttendees = async () => {
+    if (event) setRefreshing(true);
     const [eventRes, attendeeRes] = await Promise.all([
       supabase.from('events').select('*').eq('id', id).single(),
       supabase.from('registrations').select('*').eq('event_id', id).order('created_at', { ascending: false })
     ]);
     
-    if (eventRes.data) setEvent(eventRes.data);
+    if (eventRes.data) {
+      setEvent(eventRes.data);
+      setTempCapacity(eventRes.data.capacity || '');
+    }
     if (attendeeRes.data) setAttendees(attendeeRes.data);
     setLoading(false);
+    setTimeout(() => setRefreshing(false), 500);
+  };
+
+  const saveCapacity = async () => {
+    setUpdatingCapacity(true);
+    const capacityVal = tempCapacity === "" ? null : parseInt(tempCapacity);
+    
+    const { error } = await supabase
+      .from('events')
+      .update({ capacity: capacityVal })
+      .eq('id', id);
+
+    if (!error) {
+      setEvent({ ...event, capacity: capacityVal });
+      setIsEditingCapacity(false);
+    } else {
+      alert("Update failed: " + error.message);
+    }
+    setUpdatingCapacity(false);
   };
 
   const closeArrivals = async () => {
@@ -107,6 +135,16 @@ const EventDetails = () => {
           <ArrowLeft size={18} /> Dashboard
         </button>
         <div style={{ display: 'flex', gap: '1rem' }}>
+           <button 
+             onClick={fetchEventAndAttendees} 
+             disabled={refreshing}
+             className="btn btn-ghost" 
+             style={{ gap: '0.4rem' }}
+           >
+             <RefreshCw size={18} className={refreshing ? 'spin' : ''} /> 
+             {refreshing ? 'Refreshing...' : 'Refresh'}
+           </button>
+
            <button onClick={() => {
              const url = `${window.location.origin}/event/${id}`;
              navigator.clipboard.writeText(url);
@@ -135,18 +173,80 @@ const EventDetails = () => {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                <div>
                  <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem', marginTop: 0 }}>{event.name}</h1>
-                 <p style={{ color: 'var(--text-muted)' }}>{event.venue} | {new Date(event.event_time).toLocaleString()}</p>
+                 <p style={{ color: 'var(--text-muted)' }}>{event.venue} | {new Date(event.event_time).toLocaleDateString('en-GB')} at {new Date(event.event_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</p>
                </div>
                <span className={`badge ${event.status === 'finished' ? '' : 'badge-arrived'}`}>{event.status}</span>
             </div>
           </motion.div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '1.5rem', marginBottom: '2rem' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1.25rem', marginBottom: '2rem' }}>
             <div className="glass-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
               <Users size={20} className="text-primary" style={{ marginBottom: '0.5rem' }} />
               <div style={{ fontSize: '1.3rem', fontWeight: 800 }}>{stats.total}</div>
               <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>Registered</div>
             </div>
+            
+            <div 
+              className="glass-card" 
+              style={{ 
+                padding: '1.25rem', 
+                textAlign: 'center', 
+                border: '1px solid var(--border)', 
+                transition: 'all 0.2s',
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                minWidth: '160px'
+              }}
+            >
+              <Hash size={18} style={{ color: 'var(--text-muted)', margin: '0 auto 0.4rem' }} />
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem' }}>
+                {isEditingCapacity ? (
+                  <>
+                    <input 
+                      type="number"
+                      autoFocus
+                      placeholder="∞"
+                      value={tempCapacity}
+                      onChange={e => setTempCapacity(e.target.value)}
+                      style={{ 
+                        width: '60px', 
+                        padding: '0.2rem', 
+                        fontSize: '1rem', 
+                        border: '1px solid var(--accent)', 
+                        borderRadius: '4px',
+                        textAlign: 'center',
+                        background: 'transparent',
+                        color: 'inherit'
+                      }}
+                    />
+                    <button onClick={saveCapacity} disabled={updatingCapacity} className="action-btn-mini success"><Save size={14} /></button>
+                    <button onClick={() => { setIsEditingCapacity(false); setTempCapacity(event.capacity ?? ''); }} className="action-btn-mini danger"><X size={14} /></button>
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-h)' }}>
+                      {updatingCapacity ? '...' : (stats.total)} / {(event.capacity !== null && event.capacity !== undefined) ? event.capacity : '∞'}
+                    </div>
+                    <button 
+                      onClick={() => {
+                        setIsEditingCapacity(true);
+                        setTempCapacity(event.capacity ?? '');
+                      }}
+                      style={{ border: 'none', background: 'transparent', cursor: 'pointer', padding: '0.2rem', color: 'var(--text-muted)', opacity: 0.6 }}
+                      onMouseEnter={e => e.currentTarget.style.opacity = 1}
+                      onMouseLeave={e => e.currentTarget.style.opacity = 0.6}
+                    >
+                      <Hash size={14} />
+                    </button>
+                  </>
+                )}
+              </div>
+              <div style={{ fontSize: '0.6rem', color: 'var(--text-muted)', marginTop: '0.3rem', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>
+                Fill Ratio (Reg / Cap)
+              </div>
+            </div>
+
             <div className="glass-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
               <Clock size={20} style={{ color: '#f59e0b', marginBottom: '0.5rem' }} />
               <div style={{ fontSize: '1.3rem', fontWeight: 800 }}>{stats.arrived}</div>
@@ -216,7 +316,7 @@ const EventDetails = () => {
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
                        <span style={{ fontWeight: 600 }}>{a.participant_name}</span>
                        <div style={{ display: 'flex', gap: '2px' }}>
-                         {[...Array(a.feedback_data.rating)].map((_, i) => <Star key={i} size={12} fill="var(--accent)" color="var(--accent)" />)}
+                          {[...Array(a.feedback_data.rating)].map((_, i) => <Star key={i} size={12} fill="var(--accent)" color="var(--accent)" />)}
                        </div>
                     </div>
                     <p style={{ fontSize: '0.9rem', fontStyle: 'italic' }}>"{a.feedback_data.comments}"</p>

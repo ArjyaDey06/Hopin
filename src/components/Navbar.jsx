@@ -48,7 +48,8 @@ const Navbar = () => {
         display: 'flex',
         justifyContent: 'space-between',
         alignItems: 'center',
-        padding: '1rem 1.5rem',
+        padding: '0 1.5rem',
+        height: '68px',
         background: 'var(--social-bg)',
         backdropFilter: 'blur(10px)',
         borderBottom: '1px solid var(--border)',
@@ -57,9 +58,16 @@ const Navbar = () => {
         zIndex: 100
       }}>
         {/* Logo */}
-        <Link to="/" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'var(--text-h)', fontSize: '1.4rem', fontWeight: 800 }}>
-          <Calendar size={28} color="var(--accent)" />
-          <span>Hopin</span>
+        <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none' }}>
+          <img
+            src="/ieee_logo.svg"
+            alt="IEEE Logo"
+            style={{
+              width: '220px',
+              height: 'auto',
+              display: 'block',
+            }}
+          />
         </Link>
 
         {/* Desktop Nav */}

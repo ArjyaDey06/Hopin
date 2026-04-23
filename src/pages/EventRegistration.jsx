@@ -112,10 +112,13 @@ const EventRegistration = () => {
           {event.poster_url && (
             <img src={event.poster_url} style={{ width: '100%', borderRadius: 'var(--radius-lg)', boxShadow: 'var(--shadow)', marginBottom: '1.5rem', maxHeight: '400px', objectFit: 'cover' }} alt={event.name} />
           )}
-          <h1 style={{ marginBottom: '0.75rem', marginTop: 0 }}>{event.name}</h1>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '1.5rem' }}>{event.description}</p>
+          <h1 style={{ marginBottom: '1.5rem', marginTop: 0 }}>{event.name}</h1>
+          <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', lineHeight: '1.6' }}>{event.description}</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.95rem', color: 'var(--text)' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}><Calendar size={18} color="var(--accent)" /> {new Date(event.event_time).toLocaleString()}</div>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <Calendar size={18} color="var(--accent)" /> 
+              {new Date(event.event_time).toLocaleDateString('en-GB')} at {new Date(event.event_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+            </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}><MapPin size={18} color="var(--accent)" /> {event.venue}</div>
           </div>
         </motion.div>

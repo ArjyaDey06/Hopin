@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
-import LandingPage from './pages/LandingPage';
 import AdminDashboard from './pages/AdminDashboard';
 import CreateEvent from './pages/CreateEvent';
 import EventRegistration from './pages/EventRegistration';
@@ -34,14 +33,18 @@ const ProtectedRoute = ({ children }) => {
 // Inner component so we can use hooks inside Router
 function AppInner() {
   const location = useLocation();
-  const isLanding = location.pathname === '/';
+  const hideNavbar =
+    location.pathname === '/' ||
+    location.pathname === '/login' ||
+    location.pathname.startsWith('/event/') ||
+    location.pathname.startsWith('/feedback/');
 
   return (
-    <div style={{ minHeight: '100vh' }}>
-      {!isLanding && <Navbar />}
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+      {!hideNavbar && <Navbar />}
       <Routes>
-        {/* Landing Page */}
-        <Route path="/" element={<LandingPage />} />
+        {/* Default Route */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
 
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
