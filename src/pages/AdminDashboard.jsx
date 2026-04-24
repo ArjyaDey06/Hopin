@@ -30,7 +30,7 @@ const AdminDashboard = () => {
 
   return (
     <div className="container" style={{ padding: '3rem 1rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem' }}>
         <div>
           <h1 style={{ fontSize: '3rem', marginBottom: '0.5rem', marginTop: 0 }}>Dashboard</h1>
           <p style={{ color: 'var(--text-muted)' }}>Manage your institute's events and registrations.</p>

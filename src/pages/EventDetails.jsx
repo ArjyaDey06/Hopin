@@ -188,11 +188,11 @@ const EventDetails = () => {
 
   return (
     <div className="container" style={{ padding: '3rem 1rem' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <button onClick={() => navigate('/admin')} className="btn btn-ghost">
           <ArrowLeft size={18} /> Dashboard
         </button>
-        <div style={{ display: 'flex', gap: '1rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
            <button 
              onClick={fetchEventAndAttendees} 
              disabled={refreshing}
@@ -219,22 +219,9 @@ const EventDetails = () => {
                <MessageSquare size={18} /> Feedback Closed
              </button>
            ) : (
-             <>
-               <button onClick={() => navigate(`/admin/scan/${id}`)} className="btn btn-primary" style={{ background: 'var(--accent)' }}>
-                 <QrCode size={18} /> Open Scanner
-               </button>
-               <button
-                 onClick={() => {
-                   const url = `${window.location.origin}/feedback/${id}`;
-                   navigator.clipboard.writeText(url);
-                   alert("Feedback link copied! Share this with participants.");
-                 }}
-                 className="btn btn-primary"
-                 style={{ background: 'var(--accent)' }}
-               >
-                 <MessageSquare size={18} /> Feedback QR
-               </button>
-             </>
+             <button onClick={() => navigate(`/admin/scan/${id}`)} className="btn btn-primary" style={{ background: 'var(--accent)' }}>
+               <QrCode size={18} /> Open Scanner
+             </button>
            )}
 
         </div>
