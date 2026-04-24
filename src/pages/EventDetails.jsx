@@ -2,10 +2,11 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
+import { QRCodeSVG } from 'qrcode.react';
 import {
   Users, CheckCircle, Clock, QrCode, ArrowLeft,
   FileText, Share2, MessageSquare, Star, Trash2,
-  RefreshCw, Hash, Save, X
+  RefreshCw, Hash, Save, X, Copy, Check, Pencil, Plus, Lock
 } from 'lucide-react';
 
 const EventDetails = () => {
@@ -21,6 +22,63 @@ const EventDetails = () => {
   const [closing, setClosing] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [copiedReg, setCopiedReg] = useState(false);
+  const [copiedFeedback, setCopiedFeedback] = useState(false);
+  const [showQEditor, setShowQEditor] = useState(false);
+  const [draftQuestions, setDraftQuestions] = useState([]);
+  const [savingQ, setSavingQ] = useState(false);
+
+  const DEFAULT_QUESTIONS = [
+    { id: 'q1', label: 'What did you like most?', placeholder: 'Your comments...', required: true },
+    { id: 'q2', label: 'Any suggestions for next time?', placeholder: 'Help us improve', required: false },
+  ];
+
+  const openQEditor = () => {
+    const existing = event?.feedback_questions?.length ? event.feedback_questions : DEFAULT_QUESTIONS;
+    setDraftQuestions(existing.map(q => ({ ...q })));
+    setShowQEditor(true);
+  };
+
+  const addQuestion = () => {
+    const newId = `q${Date.now()}`;
+    setDraftQuestions(prev => [...prev, { id: newId, label: '', placeholder: '', required: false }]);
+  };
+
+  const removeQuestion = (idx) => {
+    setDraftQuestions(prev => prev.filter((_, i) => i !== idx));
+  };
+
+  const saveQuestions = async () => {
+    if (draftQuestions.some(q => !q.label.trim())) {
+      alert('All questions must have a label.');
+      return;
+    }
+    setSavingQ(true);
+    const { error } = await supabase.from('events').update({ feedback_questions: draftQuestions }).eq('id', id);
+    if (!error) {
+      setEvent(prev => ({ ...prev, feedback_questions: draftQuestions }));
+      setShowQEditor(false);
+    } else {
+      alert('Save failed: ' + error.message);
+    }
+    setSavingQ(false);
+  };
+
+
+  const registrationLink = `${window.location.origin}/event/${id}`;
+  const feedbackLink = `${window.location.origin}/feedback/${id}`;
+
+  const handleCopyReg = () => {
+    navigator.clipboard.writeText(registrationLink);
+    setCopiedReg(true);
+    setTimeout(() => setCopiedReg(false), 2000);
+  };
+
+  const handleCopyFeedback = () => {
+    navigator.clipboard.writeText(feedbackLink);
+    setCopiedFeedback(true);
+    setTimeout(() => setCopiedFeedback(false), 2000);
+  };
 
   useEffect(() => {
     fetchEventAndAttendees();
@@ -152,18 +210,33 @@ const EventDetails = () => {
            }} className="btn btn-ghost"><Share2 size={18} /> Invite Link</button>
            
            {event.status === 'finished' ? (
-             <button onClick={() => {
-               const url = `${window.location.origin}/feedback/${id}`;
-               navigator.clipboard.writeText(url);
-               alert("Feedback link copied!");
-             }} className="btn btn-primary" style={{ background: '#c084fc' }}>
-               <MessageSquare size={18} /> Feedback QR
+             <button
+               className="btn btn-primary"
+               style={{ background: 'var(--accent)', opacity: 0.6, cursor: 'not-allowed' }}
+               title="Event is finished — feedback form is now closed"
+               disabled
+             >
+               <MessageSquare size={18} /> Feedback Closed
              </button>
            ) : (
-             <button onClick={() => navigate(`/admin/scan/${id}`)} className="btn btn-primary" style={{ background: 'var(--accent)' }}>
-               <QrCode size={18} /> Open Scanner
-             </button>
+             <>
+               <button onClick={() => navigate(`/admin/scan/${id}`)} className="btn btn-primary" style={{ background: 'var(--accent)' }}>
+                 <QrCode size={18} /> Open Scanner
+               </button>
+               <button
+                 onClick={() => {
+                   const url = `${window.location.origin}/feedback/${id}`;
+                   navigator.clipboard.writeText(url);
+                   alert("Feedback link copied! Share this with participants.");
+                 }}
+                 className="btn btn-primary"
+                 style={{ background: 'var(--accent)' }}
+               >
+                 <MessageSquare size={18} /> Feedback QR
+               </button>
+             </>
            )}
+
         </div>
       </div>
 
@@ -298,7 +371,7 @@ const EventDetails = () => {
                         {a.present && <CheckCircle size={14} style={{ color: '#10b981', marginLeft: '0.5rem' }} />}
                       </td>
                       <td style={{ padding: '1rem 1.5rem' }}>
-                        {a.feedback_data ? <span style={{ color: '#c084fc', fontSize: '0.8rem' }}><Star size={12} fill="currentColor" /> Rated {a.feedback_data.rating}/5</span> : '-'}
+                        {a.feedback_data ? <span style={{ color: 'var(--accent)', fontSize: '0.8rem' }}><Star size={12} fill="currentColor" /> Rated {a.feedback_data.rating}/5</span> : '-'}
                       </td>
                     </tr>
                   ))}
@@ -311,20 +384,27 @@ const EventDetails = () => {
             <div className="glass-card" style={{ padding: '1.5rem' }}>
               <h3 style={{ marginBottom: '1.5rem' }}>Recent Feedback</h3>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {attendees.filter(a => a.feedback_data).slice(0, 5).map((a, i) => (
-                  <div key={i} style={{ padding: '1rem', background: 'var(--bg)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                       <span style={{ fontWeight: 600 }}>{a.participant_name}</span>
-                       <div style={{ display: 'flex', gap: '2px' }}>
-                          {[...Array(a.feedback_data.rating)].map((_, i) => <Star key={i} size={12} fill="var(--accent)" color="var(--accent)" />)}
-                       </div>
+                {attendees.filter(a => a.feedback_data).slice(0, 5).map((a, i) => {
+                  const fd = a.feedback_data;
+                  const firstAnswer = fd.answers
+                    ? Object.values(fd.answers)[0]
+                    : fd.comments;
+                  return (
+                    <div key={i} style={{ padding: '1rem', background: 'var(--bg)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
+                         <span style={{ fontWeight: 600 }}>{a.participant_name}</span>
+                         <div style={{ display: 'flex', gap: '2px' }}>
+                            {[...Array(fd.rating || 0)].map((_, i) => <Star key={i} size={12} fill="var(--accent)" color="var(--accent)" />)}
+                         </div>
+                      </div>
+                      {firstAnswer && <p style={{ fontSize: '0.9rem', fontStyle: 'italic', margin: 0 }}>"{firstAnswer}"</p>}
                     </div>
-                    <p style={{ fontSize: '0.9rem', fontStyle: 'italic' }}>"{a.feedback_data.comments}"</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
           )}
+
         </div>
 
         <div className="glass-card" style={{ padding: '1.5rem' }}>
@@ -332,13 +412,61 @@ const EventDetails = () => {
           {event.poster_url && (
             <img src={event.poster_url} style={{ width: '100%', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', maxHeight: '220px', objectFit: 'cover' }} alt="Poster" />
           )}
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+
+          {/* Registration QR + Link */}
+          <div style={{ marginBottom: '1.25rem' }}>
+            <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.75rem', marginTop: 0 }}>Registration</p>
+            <div style={{ background: 'white', borderRadius: 'var(--radius-md)', padding: '1rem', display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
+              <QRCodeSVG value={registrationLink} size={150} level="H" />
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <code style={{ flex: 1, padding: '0.5rem 0.6rem', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: '0.7rem', wordBreak: 'break-all', color: 'var(--text-h)', lineHeight: 1.4 }}>
+                {registrationLink}
+              </code>
+              <button onClick={handleCopyReg} className="btn btn-primary" style={{ flexShrink: 0, padding: '0.5rem' }}>
+                {copiedReg ? <Check size={14} /> : <Copy size={14} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Feedback QR + Link */}
+          <div style={{ marginBottom: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', margin: 0 }}>
+                Feedback {event.status === 'finished' && <span style={{ color: '#ef4444', fontWeight: 400 }}>(closed)</span>}
+              </p>
+              <button
+                onClick={openQEditor}
+                style={{ border: 'none', background: 'var(--accent-bg)', color: 'var(--accent)', borderRadius: 'var(--radius-sm)', padding: '0.25rem 0.6rem', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+              >
+                <Pencil size={11} /> Edit Questions
+              </button>
+            </div>
+            <div style={{ background: 'white', borderRadius: 'var(--radius-md)', padding: '1rem', display: 'flex', justifyContent: 'center', marginBottom: '0.75rem', position: 'relative' }}>
+              <QRCodeSVG value={feedbackLink} size={150} level="H" />
+              {event.status === 'finished' && (
+                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                  <Lock size={36} color="white" />
+                </div>
+              )}
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+              <code style={{ flex: 1, padding: '0.5rem 0.6rem', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: '0.7rem', wordBreak: 'break-all', color: 'var(--text-h)', lineHeight: 1.4 }}>
+                {feedbackLink}
+              </code>
+              <button onClick={handleCopyFeedback} className="btn btn-primary" style={{ flexShrink: 0, padding: '0.5rem' }}>
+                {copiedFeedback ? <Check size={14} /> : <Copy size={14} />}
+              </button>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '0.25rem', borderTop: '1px solid var(--border)' }}>
             <button onClick={async () => {
               if (window.confirm("Finish this event? Students will be able to submit feedback.")) {
                 await supabase.from('events').update({ status: 'finished' }).eq('id', id);
                 fetchEventAndAttendees();
               }
-            }} disabled={event.status === 'finished'} className="btn btn-primary" style={{ width: '100%' }}>
+            }} disabled={event.status === 'finished'} className="btn btn-primary" style={{ width: '100%', marginTop: '0.75rem' }}>
               {event.status === 'finished' ? '✓ Event Finished' : 'Finish Event'}
             </button>
             <button onClick={() => navigate('/admin')} className="btn btn-ghost" style={{ width: '100%' }}>Back to Dashboard</button>
@@ -386,6 +514,70 @@ const EventDetails = () => {
                   {deleting ? 'Deleting…' : 'Yes, Delete'}
                 </button>
               </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Feedback Question Editor Modal */}
+      <AnimatePresence>
+        {showQEditor && (
+          <motion.div
+            initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.55)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1rem' }}
+            onClick={() => setShowQEditor(false)}>
+            <motion.div
+              initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
+              onClick={e => e.stopPropagation()}
+              className="glass-card"
+              style={{ maxWidth: '540px', width: '100%', padding: '2rem', maxHeight: '80vh', overflowY: 'auto' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h2 style={{ margin: 0, fontSize: '1.3rem' }}>Edit Feedback Questions</h2>
+                <button onClick={() => setShowQEditor(false)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-muted)' }}><X size={20} /></button>
+              </div>
+              <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '1.5rem', marginTop: 0 }}>
+                The star rating is always included. Customize the text questions below.
+              </p>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '1.5rem' }}>
+                {draftQuestions.map((q, idx) => (
+                  <div key={q.id} style={{ padding: '1rem', background: 'var(--bg)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                      <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--text-muted)' }}>Question {idx + 1}</span>
+                      <button onClick={() => removeQuestion(idx)} style={{ border: 'none', background: 'transparent', color: '#ef4444', cursor: 'pointer', display: 'flex' }}><Trash2 size={14} /></button>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                      <input
+                        className="input"
+                        placeholder="Question label *"
+                        value={q.label}
+                        onChange={e => setDraftQuestions(prev => prev.map((dq, i) => i === idx ? { ...dq, label: e.target.value } : dq))}
+                      />
+                      <input
+                        className="input"
+                        placeholder="Placeholder text (optional)"
+                        value={q.placeholder || ''}
+                        onChange={e => setDraftQuestions(prev => prev.map((dq, i) => i === idx ? { ...dq, placeholder: e.target.value } : dq))}
+                      />
+                      <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'var(--text-muted)', cursor: 'pointer' }}>
+                        <input
+                          type="checkbox"
+                          checked={q.required}
+                          onChange={e => setDraftQuestions(prev => prev.map((dq, i) => i === idx ? { ...dq, required: e.target.checked } : dq))}
+                        />
+                        Required
+                      </label>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              <button onClick={addQuestion} className="btn btn-ghost" style={{ width: '100%', marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+                <Plus size={16} /> Add Question
+              </button>
+              <button onClick={saveQuestions} disabled={savingQ} className="btn btn-primary" style={{ width: '100%' }}>
+                <Save size={16} /> {savingQ ? 'Saving...' : 'Save Questions'}
+              </button>
             </motion.div>
           </motion.div>
         )}

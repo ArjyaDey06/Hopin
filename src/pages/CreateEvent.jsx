@@ -85,10 +85,22 @@ const CreateEvent = () => {
     ? `${window.location.origin}/event/${createdEvent.id}`
     : '';
 
+  const feedbackLink = createdEvent
+    ? `${window.location.origin}/feedback/${createdEvent.id}`
+    : '';
+
+  const [copiedFeedback, setCopiedFeedback] = useState(false);
+
   const handleCopy = () => {
     navigator.clipboard.writeText(registrationLink);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleCopyFeedback = () => {
+    navigator.clipboard.writeText(feedbackLink);
+    setCopiedFeedback(true);
+    setTimeout(() => setCopiedFeedback(false), 2000);
   };
 
   // ─── Success Screen ───────────────────────────────────────────
@@ -118,12 +130,31 @@ const CreateEvent = () => {
             </div>
           </div>
 
-          <div className="glass-card" style={{ textAlign: 'center', marginBottom: '2rem' }}>
-            <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '1.5rem', marginTop: 0 }}>QR Code (scan to register)</p>
-            <div style={{ display: 'inline-block', background: 'white', padding: '1.25rem', borderRadius: 'var(--radius-md)' }}>
-              <QRCodeSVG value={registrationLink} size={200} level="H" />
+          <div className="glass-card" style={{ marginBottom: '1.5rem', border: '1px solid var(--accent-border)', background: 'var(--accent-bg)' }}>
+            <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent)', marginBottom: '0.75rem', marginTop: 0 }}>Feedback Link <span style={{ fontSize: '0.65rem', fontWeight: 400, color: 'var(--text-muted)' }}>(share after event)</span></p>
+            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+              <code style={{ flex: 1, padding: '0.75rem', background: 'var(--bg)', border: '1px solid var(--accent-border)', borderRadius: 'var(--radius-md)', fontSize: '0.8rem', wordBreak: 'break-all', color: 'var(--accent)' }}>
+                {feedbackLink}
+              </code>
+              <button onClick={handleCopyFeedback} className="btn btn-primary" style={{ flexShrink: 0, padding: '0.75rem', background: 'var(--accent)' }}>
+                {copiedFeedback ? <Check size={18} /> : <Copy size={18} />}
+              </button>
             </div>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '1rem', marginBottom: 0 }}>Screenshot or print this QR code to share physically.</p>
+          </div>
+
+          <div className="glass-card" style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+            <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '1.5rem', marginTop: 0 }}>Registration QR (scan to register)</p>
+            <div style={{ display: 'inline-block', background: 'white', padding: '1.25rem', borderRadius: 'var(--radius-md)' }}>
+              <QRCodeSVG value={registrationLink} size={180} level="H" />
+            </div>
+          </div>
+
+          <div className="glass-card" style={{ textAlign: 'center', marginBottom: '2rem', border: '1px solid var(--accent-border)', background: 'var(--accent-bg)' }}>
+            <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent)', marginBottom: '1.5rem', marginTop: 0 }}>Feedback QR <span style={{ fontSize: '0.65rem', fontWeight: 400, color: 'var(--text-muted)' }}>(share after event)</span></p>
+            <div style={{ display: 'inline-block', background: 'white', padding: '1.25rem', borderRadius: 'var(--radius-md)' }}>
+              <QRCodeSVG value={feedbackLink} size={180} level="H" />
+            </div>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '1rem', marginBottom: 0 }}>Screenshot or print this to share for post-event feedback.</p>
           </div>
 
           <div style={{ display: 'flex', gap: '1rem' }}>

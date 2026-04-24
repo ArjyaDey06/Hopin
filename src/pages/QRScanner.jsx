@@ -44,7 +44,7 @@ const QRScanner = () => {
         setCameraError('No cameras found on this device.');
       }
     } catch (err) {
-      setCameraError('Camera permission denied. Please allow camera access and refresh.');
+      setCameraError('Camera error: ' + (err.message || err) + ' - Please ensure no other apps are using it.');
     }
   };
 
