@@ -27,6 +27,7 @@ const EventDetails = () => {
   const [showQEditor, setShowQEditor] = useState(false);
   const [draftQuestions, setDraftQuestions] = useState([]);
   const [savingQ, setSavingQ] = useState(false);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const DEFAULT_QUESTIONS = [
     { id: 'q1', label: 'What did you like most?', placeholder: 'Your comments...', required: true },
@@ -184,6 +185,12 @@ const EventDetails = () => {
     feedback: attendees.filter(a => a.feedback_data).length,
   };
 
+  const filteredAttendees = attendees.filter(a => 
+    a.participant_name?.toLowerCase().includes(searchTerm.toLowerCase()) || 
+    a.moodle_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    a.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   if (loading) return <div className="container" style={{ padding: '5rem', textAlign: 'center' }}>Loading event data...</div>;
 
   return (
@@ -325,14 +332,22 @@ const EventDetails = () => {
           </div>
 
           <div className="glass-card" style={{ overflow: 'hidden', marginBottom: '2rem' }}>
-            <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                <h3 style={{ fontSize: '1.2rem', margin: 0 }}>Attendee List</h3>
-               <div style={{ display: 'flex', gap: '0.5rem' }}>
+               <div style={{ display: 'flex', gap: '0.5rem', flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
+                 <input 
+                   type="text" 
+                   className="input" 
+                   placeholder="Search by name, ID or email..." 
+                   value={searchTerm}
+                   onChange={e => setSearchTerm(e.target.value)}
+                   style={{ maxWidth: '250px', padding: '0.4rem 0.8rem', fontSize: '0.85rem', margin: 0 }}
+                 />
                  <button onClick={exportToCSV} className="btn-ghost" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><FileText size={14} /> CSV</button>
                  <button onClick={closeArrivals} disabled={closing || event.status === 'finished'} className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>{closing ? 'Closing...' : 'Close Arrivals'}</button>
                </div>
             </div>
-            <div style={{ overflowX: 'auto' }}>
+            <div style={{ overflowX: 'auto', overflowY: 'auto', minHeight: '450px', maxHeight: '450px' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.02)', fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
@@ -343,7 +358,7 @@ const EventDetails = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {attendees.map(a => (
+                  {filteredAttendees.length > 0 ? filteredAttendees.map(a => (
                     <tr key={a.id} style={{ borderBottom: '1px solid var(--border)', transition: 'background 0.2s' }}>
                       <td style={{ padding: '1rem 1.5rem' }}>
                         <div style={{ fontWeight: 600, color: 'var(--text-h)' }}>{a.participant_name}</div>
@@ -361,7 +376,13 @@ const EventDetails = () => {
                         {a.feedback_data ? <span style={{ color: 'var(--accent)', fontSize: '0.8rem' }}><Star size={12} fill="currentColor" /> Rated {a.feedback_data.rating}/5</span> : '-'}
                       </td>
                     </tr>
-                  ))}
+                  )) : (
+                    <tr>
+                      <td colSpan="4" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+                        No participants found matching "{searchTerm}".
+                      </td>
+                    </tr>
+                  )}
                 </tbody>
               </table>
             </div>

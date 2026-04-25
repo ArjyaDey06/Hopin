@@ -69,30 +69,81 @@ const EventRegistration = () => {
 
   const downloadTicket = () => {
     const svg = document.getElementById("ticket-qr");
-    const svgData = new XMLSerializer().serializeToString(svg);
+    const clone = svg.cloneNode(true);
+    const scale = 4; // Increase resolution
+    const originalWidth = parseInt(clone.getAttribute("width") || 180);
+    const originalHeight = parseInt(clone.getAttribute("height") || 180);
+    clone.setAttribute("width", originalWidth * scale);
+    clone.setAttribute("height", originalHeight * scale);
+
+    const svgData = new XMLSerializer().serializeToString(clone);
     const canvas = document.createElement("canvas");
     const ctx = canvas.getContext("2d");
-    const img = new Image();
-    img.onload = () => {
-      canvas.width = img.width + 40;
-      canvas.height = img.height + 180;
-      ctx.fillStyle = "white";
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      ctx.drawImage(img, 20, 20);
-      ctx.fillStyle = "black";
-      ctx.font = "bold 20px Inter";
-      ctx.fillText(ticketData.participant_name, 20, img.height + 60);
-      ctx.font = "16px Inter";
-      ctx.fillText(`Moodle ID: ${ticketData.moodle_id}`, 20, img.height + 90);
-      ctx.fillText(`Event: ${event.name}`, 20, img.height + 120);
-      ctx.fillText(`Venue: ${event.venue}`, 20, img.height + 150);
-      const pngFile = canvas.toDataURL("image/png");
-      const link = document.createElement("a");
-      link.download = `ticket-${ticketData.participant_name}.png`;
-      link.href = pngFile;
-      link.click();
+
+    const qrImg = new Image();
+    const logoImg = new Image();
+
+    let imagesLoaded = 0;
+    const onImageLoad = () => {
+      imagesLoaded++;
+      if (imagesLoaded === 2) {
+        const qrWidth = qrImg.width;
+        const qrHeight = qrImg.height;
+
+        canvas.width = qrWidth + (80 * scale);
+        canvas.height = qrHeight + (280 * scale);
+
+        ctx.fillStyle = "white";
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        const logoTargetWidth = 140 * scale;
+        const logoTargetHeight = (logoImg.height / logoImg.width) * logoTargetWidth;
+
+        // Draw Logo at Top Left
+        ctx.drawImage(logoImg, 20 * scale, 20 * scale, logoTargetWidth, logoTargetHeight);
+
+        // Draw QR Code Centered
+        const qrX = (canvas.width - qrWidth) / 2;
+        const qrY = 20 * scale + logoTargetHeight + 20 * scale;
+        ctx.drawImage(qrImg, qrX, qrY);
+
+        // Draw Text below QR
+        let currentY = qrY + qrHeight + (40 * scale);
+
+        ctx.fillStyle = "black";
+        ctx.textAlign = "center";
+
+        // Event Name
+        ctx.font = `bold ${24 * scale}px Inter`;
+        ctx.fillText(event.name, canvas.width / 2, currentY);
+        currentY += 40 * scale;
+
+        // Participant Name
+        ctx.font = `bold ${20 * scale}px Inter`;
+        ctx.fillText(ticketData.participant_name, canvas.width / 2, currentY);
+        currentY += 30 * scale;
+
+        // Other Details
+        ctx.font = `${16 * scale}px Inter`;
+        ctx.fillText(`Moodle ID: ${ticketData.moodle_id}`, canvas.width / 2, currentY);
+        currentY += 25 * scale;
+
+        ctx.fillText(`Venue: ${event.venue}`, canvas.width / 2, currentY);
+
+        const pngFile = canvas.toDataURL("image/png");
+        const link = document.createElement("a");
+        link.download = `ticket-${ticketData.participant_name}.png`;
+        link.href = pngFile;
+        link.click();
+      }
     };
-    img.src = "data:image/svg+xml;base64," + btoa(svgData);
+
+    qrImg.onload = onImageLoad;
+    logoImg.onload = onImageLoad;
+    logoImg.crossOrigin = "anonymous"; // Prevents tainted canvas
+
+    qrImg.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgData);
+    logoImg.src = "/ieee_logo.svg";
   };
 
   if (loading) return <div className="container" style={{ textAlign: 'center', padding: '5rem' }}>Loading event details...</div>;
@@ -146,7 +197,7 @@ const EventRegistration = () => {
           <p style={{ color: 'var(--text-muted)', marginBottom: 'clamp(1.5rem, 5vw, 2rem)', lineHeight: '1.6' }}>{event.description}</p>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', fontSize: '0.95rem', color: 'var(--text)' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <Calendar size={18} color="var(--accent)" /> 
+              <Calendar size={18} color="var(--accent)" />
               {new Date(event.event_time).toLocaleDateString('en-GB')} at {new Date(event.event_time).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
             </div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}><MapPin size={18} color="var(--accent)" /> {event.venue}</div>
