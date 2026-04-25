@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import { AuthProvider, useAuth } from './context/AuthContext';
 import Navbar from './components/Navbar';
 import Login from './pages/Login';
+import Signup from './pages/Signup';
 import AdminDashboard from './pages/AdminDashboard';
 import CreateEvent from './pages/CreateEvent';
 import EventRegistration from './pages/EventRegistration';
@@ -36,6 +37,7 @@ function AppInner() {
   const hideNavbar =
     location.pathname === '/' ||
     location.pathname === '/login' ||
+    location.pathname === '/signup' ||
     location.pathname.startsWith('/event/') ||
     location.pathname.startsWith('/feedback/');
 
@@ -48,6 +50,7 @@ function AppInner() {
 
         {/* Public Routes */}
         <Route path="/login" element={<Login />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/event/:id" element={<EventRegistration />} />
         <Route path="/feedback/:id" element={<FeedbackForm />} />
 

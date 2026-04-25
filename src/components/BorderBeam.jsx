@@ -44,8 +44,6 @@ const BorderBeam = ({
     position: 'absolute',
     // Make the gradient larger than the card so when it rotates, it covers the corners
     inset: '-100%', 
-    aspectRatio: '1',
-    borderRadius: '50%',
     background: `conic-gradient(
       from 0deg,
       transparent 0deg,

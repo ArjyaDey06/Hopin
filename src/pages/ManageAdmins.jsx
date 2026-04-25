@@ -32,9 +32,16 @@ const ManageAdmins = () => {
 
   const updateRole = async (userId, newRole) => {
     setUpdating(userId);
-    const { error } = await supabase.from('profiles').update({ role: newRole }).eq('id', userId);
-    if (!error) setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
-    else alert(error.message);
+    const { data, error } = await supabase.from('profiles').update({ role: newRole }).eq('id', userId).select();
+    
+    if (error) {
+      alert(error.message);
+    } else if (data && data.length > 0) {
+      setUsers(users.map(u => u.id === userId ? { ...u, role: newRole } : u));
+      alert(`User role successfully updated to ${newRole}!`);
+    } else {
+      alert("Failed to update role. This is likely blocked by Row Level Security (RLS) policies in your Supabase database. You must grant update permissions to superadmins.");
+    }
     setUpdating(null);
   };
 
