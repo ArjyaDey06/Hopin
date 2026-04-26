@@ -110,6 +110,7 @@ const CreateEvent = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
+          className="success-wrapper"
           style={{ maxWidth: '560px', margin: '0 auto' }}>
 
           <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
@@ -157,7 +158,7 @@ const CreateEvent = () => {
             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '1rem', marginBottom: 0 }}>Screenshot or print this to share for post-event feedback.</p>
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+          <div className="success-actions">
             <button onClick={() => navigate(`/admin/event/${createdEvent.id}`)} className="btn btn-primary" style={{ flex: '1 1 200px' }}>
               View Event Dashboard
             </button>
@@ -289,7 +290,23 @@ const CreateEvent = () => {
       <style>{`
         .ev-label { display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.4rem; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        @media (max-width: 600px) { .two-col { grid-template-columns: 1fr; } }
+        
+        /* Prioritized Media Queries */
+        @media (max-width: 600px) { 
+          .two-col { grid-template-columns: 1fr !important; } 
+          .success-actions { flex-direction: column !important; }
+          .success-actions button { width: 100% !important; }
+        }
+        
+        /* Fluid spacing using clamp() for sparse sections */
+        .success-wrapper > div {
+          margin-bottom: clamp(1rem, 4vw, 1.5rem) !important;
+        }
+        .success-actions {
+          display: flex;
+          gap: clamp(0.75rem, 3vw, 1rem);
+          margin-top: clamp(1.5rem, 5vw, 2.5rem);
+        }
       `}</style>
     </div>
   );

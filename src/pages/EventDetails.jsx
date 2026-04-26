@@ -414,7 +414,7 @@ const EventDetails = () => {
 
         </div>
 
-        <div className="glass-card" style={{ padding: '1.5rem' }}>
+        <div className="glass-card event-controls-card" style={{ padding: '1.5rem', maxHeight: '100svh', overflowY: 'auto' }}>
           <h3 style={{ marginBottom: '1rem', marginTop: 0 }}>Event Controls</h3>
           {event.poster_url && (
             <img src={event.poster_url} style={{ width: '100%', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', maxHeight: '220px', objectFit: 'cover' }} alt="Poster" />
@@ -593,31 +593,35 @@ const EventDetails = () => {
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
+        
+        /* Media Queries - First Priority for structural shifts */
         @media (max-width: 900px) {
-          .grid-details { grid-template-columns: 1fr !important; }
+          .grid-details { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
+          .event-controls-card { maxHeight: none !important; }
         }
-        /* Stats grid: 5 cols on wide, 3 on medium, auto on small */
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(5, 1fr);
-          gap: 1rem;
-        }
-        @media (max-width: 700px) {
-          .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
-        }
-        @media (max-width: 480px) {
-          .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
-        }
-        /* Attendee table: horizontal scroll on small screens */
-        .attendee-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
-        .attendee-scroll table { min-width: 480px; }
-        /* Action buttons in attendee header don't force full width */
-        .attendee-actions .btn, .attendee-actions button { width: auto !important; flex-shrink: 0; }
+        
         @media (max-width: 600px) {
           .attendee-header { flex-direction: column; align-items: flex-start !important; gap: 0.75rem; }
           .attendee-actions { width: 100%; justify-content: flex-start; }
           .attendee-actions input { flex: 1; max-width: 100% !important; }
+          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.5rem !important; }
         }
+
+        /* Fluid spacing with clamp() for areas with fewer elements */
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: clamp(0.5rem, 2vw, 1rem);
+        }
+        
+        /* Table / Grid Overflow handling */
+        .attendee-scroll, .event-controls-card { 
+          overflow: auto; 
+          -webkit-overflow-scrolling: touch; 
+          scrollbar-width: thin;
+        }
+        .attendee-scroll table { min-width: 480px; }
+        
         .action-btn-mini {
           border: none;
           border-radius: 4px;
