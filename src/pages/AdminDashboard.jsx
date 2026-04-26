@@ -29,23 +29,23 @@ const AdminDashboard = () => {
   const pastEvents = events.filter(e => e.status === 'finished');
 
   return (
-    <div className="container" style={{ padding: 'clamp(1.5rem, 5vw, 3rem) 1rem' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem' }}>
+    <div className="container" style={{ padding: 'clamp(1rem, 5vw, 2rem) 1rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(1rem, 4vw, 1.5rem)', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 'clamp(2rem, 8vw, 4rem)' }}>
         <div>
           <h1 style={{ fontSize: 'clamp(2rem, 8vw, 3rem)', marginBottom: '0.5rem', marginTop: 0 }}>Dashboard</h1>
           <p style={{ color: 'var(--text-muted)' }}>Manage your institute's events and registrations.</p>
         </div>
-        <button onClick={() => navigate('/admin/event/new')} className="btn btn-primary" style={{ padding: '0.8rem 2rem' }}>
-          <Plus size={20} /> Create Event
+        <button onClick={() => navigate('/admin/event/new')} className="btn btn-primary" style={{ padding: '0.6rem 1.5rem' }}>
+          <Plus size={18} /> Create Event
         </button>
       </div>
 
       {/* Active Events Section */}
-      <section style={{ marginBottom: '4rem' }}>
-        <h2 style={{ fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--accent)', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-          <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'currentColor' }}></div> Active Events
+      <section style={{ marginBottom: 'clamp(2rem, 8vw, 4rem)' }}>
+        <h2 style={{ fontSize: '1rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--accent)', marginBottom: 'clamp(1rem, 4vw, 2rem)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+          <div style={{ width: '6px', height: '6px', borderRadius: '50%', background: 'currentColor' }}></div> Active Events
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(300px, 100%), 1fr))', gap: '2rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: 'clamp(1rem, 4vw, 2rem)' }}>
           {activeEvents.length === 0 ? (
             <div className="glass-card" style={{ gridColumn: '1 / -1', padding: '4rem', textAlign: 'center', opacity: 0.6 }}>
               <Calendar size={48} style={{ color: 'var(--text-muted)', marginBottom: '1rem' }} />

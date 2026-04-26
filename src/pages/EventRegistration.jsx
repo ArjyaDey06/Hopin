@@ -169,12 +169,12 @@ const EventRegistration = () => {
         <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="glass-card" style={{ width: '100%', maxWidth: '420px', textAlign: 'center' }}>
           <h2 style={{ fontSize: 'clamp(1.4rem, 5vw, 1.8rem)', marginBottom: '0.5rem', color: '#22c55e', marginTop: 0 }}>You're In! 🎉</h2>
           <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '0.9rem' }}>Show this QR code at the entrance.</p>
-          <div ref={ticketRef} style={{ background: 'white', padding: '1.5rem', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', display: 'inline-block' }}>
-            <QRCodeSVG id="ticket-qr" value={ticketData.ticket_id} size={180} level="H" />
-            <div style={{ marginTop: '1rem', borderTop: '2px dashed #e5e7eb', paddingTop: '1rem', textAlign: 'left', color: 'black' }}>
-              <h3 style={{ fontSize: '1.1rem', marginBottom: '0.2rem', marginTop: 0 }}>{ticketData.participant_name}</h3>
-              <p style={{ fontSize: '0.85rem', opacity: 0.6, margin: 0 }}>{ticketData.moodle_id} · {ticketData.department} · Div {ticketData.division}</p>
-              <p style={{ fontSize: '0.8rem', opacity: 0.5, marginTop: '0.25rem', margin: 0 }}>{event.name}</p>
+          <div ref={ticketRef} style={{ background: 'white', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.25rem', display: 'inline-block' }}>
+            <QRCodeSVG id="ticket-qr" value={ticketData.ticket_id} size={150} level="H" />
+            <div style={{ marginTop: '0.75rem', borderTop: '2px dashed #e5e7eb', paddingTop: '0.75rem', textAlign: 'left', color: 'black' }}>
+              <h3 style={{ fontSize: '1rem', marginBottom: '0.2rem', marginTop: 0 }}>{ticketData.participant_name}</h3>
+              <p style={{ fontSize: '0.8rem', opacity: 0.6, margin: 0 }}>{ticketData.moodle_id} · {ticketData.department} · Div {ticketData.division}</p>
+              <p style={{ fontSize: '0.75rem', opacity: 0.5, marginTop: '0.2rem', margin: 0 }}>{event.name}</p>
             </div>
           </div>
           <button onClick={downloadTicket} className="btn btn-primary" style={{ width: '100%' }}>
@@ -276,8 +276,8 @@ const EventRegistration = () => {
         .two-col-form { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(0.75rem, 3vw, 1rem); }
         select.input { cursor: pointer; }
         @media (max-width: 768px) {
-          .reg-layout { grid-template-columns: 1fr; gap: 1.5rem; }
-          .two-col-form { grid-template-columns: 1fr; }
+          .reg-layout { grid-template-columns: 1fr; gap: 1rem; }
+          .two-col-form { grid-template-columns: 1fr; gap: 0.75rem; }
         }
       `}</style>
     </div>

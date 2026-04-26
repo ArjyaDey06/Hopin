@@ -121,11 +121,11 @@ const CreateEvent = () => {
           <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
             <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.75rem', marginTop: 0 }}>Registration Link</p>
             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-              <code style={{ flex: 1, padding: '0.75rem', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', fontSize: '0.8rem', wordBreak: 'break-all', color: 'var(--text-h)' }}>
+              <code style={{ flex: 1, padding: '0.5rem', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', fontSize: '0.75rem', wordBreak: 'break-all', color: 'var(--text-h)' }}>
                 {registrationLink}
               </code>
-              <button onClick={handleCopy} className="btn btn-primary" style={{ flexShrink: 0, padding: '0.75rem' }}>
-                {copied ? <Check size={18} /> : <Copy size={18} />}
+              <button onClick={handleCopy} className="btn btn-primary" style={{ flexShrink: 0, padding: '0.5rem' }}>
+                {copied ? <Check size={16} /> : <Copy size={16} />}
               </button>
             </div>
           </div>
@@ -133,11 +133,11 @@ const CreateEvent = () => {
           <div className="glass-card" style={{ marginBottom: '1.5rem', border: '1px solid var(--accent-border)', background: 'var(--accent-bg)' }}>
             <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent)', marginBottom: '0.75rem', marginTop: 0 }}>Feedback Link <span style={{ fontSize: '0.65rem', fontWeight: 400, color: 'var(--text-muted)' }}>(share after event)</span></p>
             <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-              <code style={{ flex: 1, padding: '0.75rem', background: 'var(--bg)', border: '1px solid var(--accent-border)', borderRadius: 'var(--radius-md)', fontSize: '0.8rem', wordBreak: 'break-all', color: 'var(--accent)' }}>
+              <code style={{ flex: 1, padding: '0.5rem', background: 'var(--bg)', border: '1px solid var(--accent-border)', borderRadius: 'var(--radius-md)', fontSize: '0.75rem', wordBreak: 'break-all', color: 'var(--accent)' }}>
                 {feedbackLink}
               </code>
-              <button onClick={handleCopyFeedback} className="btn btn-primary" style={{ flexShrink: 0, padding: '0.75rem', background: 'var(--accent)' }}>
-                {copiedFeedback ? <Check size={18} /> : <Copy size={18} />}
+              <button onClick={handleCopyFeedback} className="btn btn-primary" style={{ flexShrink: 0, padding: '0.5rem', background: 'var(--accent)' }}>
+                {copiedFeedback ? <Check size={16} /> : <Copy size={16} />}
               </button>
             </div>
           </div>

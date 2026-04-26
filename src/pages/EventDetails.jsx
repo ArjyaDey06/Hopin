@@ -600,13 +600,13 @@ const EventDetails = () => {
         .stats-grid {
           display: grid;
           grid-template-columns: repeat(5, 1fr);
-          gap: 1.25rem;
+          gap: 1rem;
         }
         @media (max-width: 700px) {
-          .stats-grid { grid-template-columns: repeat(3, 1fr); }
+          .stats-grid { grid-template-columns: repeat(3, 1fr); gap: 0.75rem; }
         }
         @media (max-width: 480px) {
-          .stats-grid { grid-template-columns: repeat(2, 1fr); }
+          .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
         }
         /* Attendee table: horizontal scroll on small screens */
         .attendee-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
