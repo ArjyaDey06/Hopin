@@ -63,7 +63,7 @@ const Navbar = () => {
             src="/ieee_logo.svg"
             alt="IEEE Logo"
             style={{
-              width: '220px',
+              width: 'clamp(140px, 30vw, 220px)',
               height: 'auto',
               display: 'block',
             }}
@@ -88,7 +88,7 @@ const Navbar = () => {
               <span
                 onClick={openNameEdit}
                 title="Click to edit your name"
-                style={{ maxWidth: '140px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer', borderBottom: '1px dashed var(--border)' }}>
+                style={{ maxWidth: 'clamp(80px, 15vw, 140px)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', cursor: 'pointer', borderBottom: '1px dashed var(--border)' }}>
                 {displayName}
               </span>
               <button onClick={openNameEdit} title="Edit name" style={{ border: 'none', background: 'transparent', color: 'var(--text-muted)', cursor: 'pointer', display: 'flex', padding: '0.1rem' }}>
@@ -108,9 +108,9 @@ const Navbar = () => {
           </Link>
         )}
 
-        {/* Mobile Hamburger */}
+        {/* Mobile Hamburger — always rendered, shown/hidden via CSS */}
         {user && (
-          <button className="nav-hamburger" onClick={() => setMenuOpen(!menuOpen)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-h)', display: 'none', padding: '0.4rem' }}>
+          <button className="nav-hamburger" onClick={() => setMenuOpen(!menuOpen)} style={{ border: 'none', background: 'transparent', cursor: 'pointer', color: 'var(--text-h)', padding: '0.4rem' }}>
             {menuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         )}
@@ -124,8 +124,9 @@ const Navbar = () => {
             zIndex: 99
           }} className="nav-mobile-menu">
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingBottom: '0.75rem', borderBottom: '1px solid var(--border)' }}>
-              <div style={{ fontSize: '0.9rem', color: 'var(--text-h)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <User size={15} /> {displayName}
+              <div style={{ fontSize: '0.9rem', color: 'var(--text-h)', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.5rem', overflow: 'hidden', flex: 1, marginRight: '0.5rem' }}>
+                <User size={15} style={{ flexShrink: 0 }} /> 
+                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{displayName}</span>
               </div>
               <button onClick={openNameEdit} style={{ border: 'none', background: 'transparent', color: 'var(--accent)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: '0.8rem', fontWeight: 600 }}>
                 <Pencil size={13} /> Edit
@@ -146,9 +147,11 @@ const Navbar = () => {
         )}
 
         <style>{`
+          /* Default: hamburger hidden, desktop nav visible */
+          .nav-hamburger { display: none; }
           @media (max-width: 640px) {
             .nav-desktop { display: none !important; }
-            .nav-hamburger { display: flex !important; }
+            .nav-hamburger { display: flex !important; align-items: center; }
           }
         `}</style>
       </nav>

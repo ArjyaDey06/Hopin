@@ -29,10 +29,10 @@ const AdminDashboard = () => {
   const pastEvents = events.filter(e => e.status === 'finished');
 
   return (
-    <div className="container" style={{ padding: '3rem 1rem' }}>
+    <div className="container" style={{ padding: 'clamp(1.5rem, 5vw, 3rem) 1rem' }}>
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '4rem' }}>
         <div>
-          <h1 style={{ fontSize: '3rem', marginBottom: '0.5rem', marginTop: 0 }}>Dashboard</h1>
+          <h1 style={{ fontSize: 'clamp(2rem, 8vw, 3rem)', marginBottom: '0.5rem', marginTop: 0 }}>Dashboard</h1>
           <p style={{ color: 'var(--text-muted)' }}>Manage your institute's events and registrations.</p>
         </div>
         <button onClick={() => navigate('/admin/event/new')} className="btn btn-primary" style={{ padding: '0.8rem 2rem' }}>
@@ -45,7 +45,7 @@ const AdminDashboard = () => {
         <h2 style={{ fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--accent)', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'currentColor' }}></div> Active Events
         </h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(300px, 100%), 1fr))', gap: '2rem' }}>
           {activeEvents.length === 0 ? (
             <div className="glass-card" style={{ gridColumn: '1 / -1', padding: '4rem', textAlign: 'center', opacity: 0.6 }}>
               <Calendar size={48} style={{ color: 'var(--text-muted)', marginBottom: '1rem' }} />

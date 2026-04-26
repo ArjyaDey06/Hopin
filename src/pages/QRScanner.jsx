@@ -117,7 +117,7 @@ const QRScanner = () => {
   };
 
   return (
-    <div className="container" style={{ padding: '2rem 1rem 4rem' }}>
+    <div className="container" style={{ padding: 'clamp(1rem, 5vw, 3rem) 1rem' }}>
       <button onClick={() => { stopCamera(); navigate(`/admin/event/${id}`); }} className="btn btn-ghost" style={{ marginBottom: '2rem' }}>
         <ArrowLeft size={18} /> Back to Event
       </button>

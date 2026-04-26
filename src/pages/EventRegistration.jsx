@@ -186,7 +186,7 @@ const EventRegistration = () => {
   }
 
   return (
-    <div className="container" style={{ padding: 'clamp(1.5rem, 5vw, 3rem) 1rem' }}>
+    <div className="container" style={{ padding: 'clamp(1rem, 5vw, 3rem) 1rem' }}>
       <div className="reg-layout">
         {/* Left: Event Info */}
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>

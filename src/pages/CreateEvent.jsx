@@ -106,7 +106,7 @@ const CreateEvent = () => {
   // ─── Success Screen ───────────────────────────────────────────
   if (createdEvent) {
     return (
-      <div className="container" style={{ padding: '2rem 1rem 4rem' }}>
+    <div className="container" style={{ padding: 'clamp(1rem, 5vw, 3rem) 1rem' }}>
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
@@ -157,11 +157,11 @@ const CreateEvent = () => {
             <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '1rem', marginBottom: 0 }}>Screenshot or print this to share for post-event feedback.</p>
           </div>
 
-          <div style={{ display: 'flex', gap: '1rem' }}>
-            <button onClick={() => navigate(`/admin/event/${createdEvent.id}`)} className="btn btn-primary" style={{ flex: 1 }}>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <button onClick={() => navigate(`/admin/event/${createdEvent.id}`)} className="btn btn-primary" style={{ flex: '1 1 200px' }}>
               View Event Dashboard
             </button>
-            <button onClick={() => navigate('/admin')} className="btn btn-ghost" style={{ flex: 1 }}>
+            <button onClick={() => navigate('/admin')} className="btn btn-ghost" style={{ flex: '1 1 200px' }}>
               Back to Home
             </button>
           </div>
@@ -172,7 +172,7 @@ const CreateEvent = () => {
 
   // ─── Create Form ─────────────────────────────────────────────
   return (
-    <div className="container" style={{ padding: '2rem 1rem 4rem' }}>
+    <div className="container" style={{ padding: 'clamp(1rem, 5vw, 3rem) 1rem' }}>
       <button onClick={() => navigate('/admin')} className="btn btn-ghost" style={{ marginBottom: '2rem' }}>
         <ArrowLeft size={18} /> Dashboard
       </button>

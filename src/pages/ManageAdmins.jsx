@@ -51,7 +51,7 @@ const ManageAdmins = () => {
   );
 
   return (
-    <div className="container" style={{ padding: '2rem 1rem 4rem' }}>
+    <div className="container" style={{ padding: 'clamp(1rem, 5vw, 3rem) 1rem' }}>
       <button onClick={() => navigate('/admin')} className="btn btn-ghost" style={{ marginBottom: '2rem' }}>
         <ArrowLeft size={18} /> Dashboard
       </button>
@@ -137,7 +137,7 @@ const ManageAdmins = () => {
 };
 
 const RoleButtons = ({ userId, currentRole, updating, updateRole }) => (
-  <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+  <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }} className="role-btn-group">
     {['user', 'admin', 'superadmin'].map(role => (
       <button
         key={role}

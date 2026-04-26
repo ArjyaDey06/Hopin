@@ -154,6 +154,9 @@ h1 {
   outline: none;
   transition: all 0.2s;
   box-sizing: border-box;
+  /* Prevent iOS auto-zoom on focus (requires font-size >= 16px) */
+  font-size: max(16px, 0.9rem);
+  font-family: var(--sans);
 }
 
 .input:focus {
@@ -180,7 +183,11 @@ h1 {
 @media (max-width: 768px) {
   #root { border-inline: none; }
   .container { padding: 0 1rem; }
-  .btn { width: 100%; padding: 0.8rem !important; }
+  /* Do NOT force width:100% on all buttons — it breaks inline/icon buttons.
+     Pages that need full-width buttons set it individually. */
+  .btn { min-height: 44px; }
+  /* Make touch targets comfortable */
+  .btn-primary, .btn-ghost { padding: 0.75rem 1.25rem; }
 }
 
 /* ── Rotating Text ── */

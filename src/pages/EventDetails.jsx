@@ -195,11 +195,11 @@ const EventDetails = () => {
 
   return (
     <div className="container" style={{ padding: '3rem 1rem' }}>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
         <button onClick={() => navigate('/admin')} className="btn btn-ghost">
           <ArrowLeft size={18} /> Dashboard
         </button>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
            <button 
              onClick={fetchEventAndAttendees} 
              disabled={refreshing}
@@ -246,7 +246,7 @@ const EventDetails = () => {
             </div>
           </motion.div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '1.25rem', marginBottom: '2rem' }}>
+          <div className="stats-grid" style={{ marginBottom: '2rem' }}>
             <div className="glass-card" style={{ padding: '1.5rem', textAlign: 'center' }}>
               <Users size={20} className="text-primary" style={{ marginBottom: '0.5rem' }} />
               <div style={{ fontSize: '1.3rem', fontWeight: 800 }}>{stats.total}</div>
@@ -263,7 +263,6 @@ const EventDetails = () => {
                 display: 'flex',
                 flexDirection: 'column',
                 justifyContent: 'center',
-                minWidth: '160px'
               }}
             >
               <Hash size={18} style={{ color: 'var(--text-muted)', margin: '0 auto 0.4rem' }} />
@@ -332,23 +331,23 @@ const EventDetails = () => {
           </div>
 
           <div className="glass-card" style={{ overflow: 'hidden', marginBottom: '2rem' }}>
-            <div style={{ padding: '1.5rem', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+            <div className="attendee-header" style={{ padding: '1.5rem', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                <h3 style={{ fontSize: '1.2rem', margin: 0 }}>Attendee List</h3>
-               <div style={{ display: 'flex', gap: '0.5rem', flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
+               <div className="attendee-actions" style={{ display: 'flex', gap: '0.5rem', flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
                  <input 
                    type="text" 
                    className="input" 
                    placeholder="Search by name, ID or email..." 
                    value={searchTerm}
                    onChange={e => setSearchTerm(e.target.value)}
-                   style={{ maxWidth: '250px', padding: '0.4rem 0.8rem', fontSize: '0.85rem', margin: 0 }}
+                   style={{ maxWidth: '250px', padding: '0.4rem 0.8rem', margin: 0 }}
                  />
-                 <button onClick={exportToCSV} className="btn-ghost" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}><FileText size={14} /> CSV</button>
-                 <button onClick={closeArrivals} disabled={closing || event.status === 'finished'} className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem' }}>{closing ? 'Closing...' : 'Close Arrivals'}</button>
+                 <button onClick={exportToCSV} className="btn-ghost" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', background: 'transparent', color: 'var(--text)', whiteSpace: 'nowrap', flexShrink: 0 }}><FileText size={14} /> CSV</button>
+                 <button onClick={closeArrivals} disabled={closing || event.status === 'finished'} className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0 }}>{closing ? 'Closing...' : 'Close Arrivals'}</button>
                </div>
             </div>
-            <div style={{ overflowX: 'auto', overflowY: 'auto', minHeight: '450px', maxHeight: '450px' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+            <div className="attendee-scroll" style={{ overflowX: 'auto', overflowY: 'auto', minHeight: '450px', maxHeight: '450px', WebkitOverflowScrolling: 'touch' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '480px' }}>
                 <thead>
                   <tr style={{ background: 'rgba(255,255,255,0.02)', fontSize: '0.8rem', textTransform: 'uppercase', color: 'var(--text-muted)' }}>
                     <th style={{ padding: '1rem 1.5rem' }}>Participant</th>
@@ -592,9 +591,43 @@ const EventDetails = () => {
       </AnimatePresence>
 
       <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .spin { animation: spin 1s linear infinite; }
         @media (max-width: 900px) {
           .grid-details { grid-template-columns: 1fr !important; }
         }
+        /* Stats grid: 5 cols on wide, 3 on medium, auto on small */
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(5, 1fr);
+          gap: 1.25rem;
+        }
+        @media (max-width: 700px) {
+          .stats-grid { grid-template-columns: repeat(3, 1fr); }
+        }
+        @media (max-width: 480px) {
+          .stats-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        /* Attendee table: horizontal scroll on small screens */
+        .attendee-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        .attendee-scroll table { min-width: 480px; }
+        /* Action buttons in attendee header don't force full width */
+        .attendee-actions .btn, .attendee-actions button { width: auto !important; flex-shrink: 0; }
+        @media (max-width: 600px) {
+          .attendee-header { flex-direction: column; align-items: flex-start !important; gap: 0.75rem; }
+          .attendee-actions { width: 100%; justify-content: flex-start; }
+          .attendee-actions input { flex: 1; max-width: 100% !important; }
+        }
+        .action-btn-mini {
+          border: none;
+          border-radius: 4px;
+          padding: 0.2rem 0.4rem;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+        }
+        .action-btn-mini.success { background: rgba(16,185,129,0.15); color: #10b981; }
+        .action-btn-mini.danger  { background: rgba(239,68,68,0.15);  color: #ef4444; }
       `}</style>
     </div>
   );

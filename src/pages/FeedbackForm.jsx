@@ -112,7 +112,7 @@ const FeedbackForm = () => {
     );
 
   return (
-    <div className="container" style={{ padding: 'clamp(1.5rem, 5vw, 3rem) 1rem' }}>
+    <div className="container" style={{ padding: 'clamp(1rem, 5vw, 3rem) 1rem' }}>
       <div style={{ maxWidth: '600px', margin: '0 auto' }}>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card" style={{ padding: 'clamp(1.5rem, 5vw, 3rem)' }}>
 
@@ -128,7 +128,7 @@ const FeedbackForm = () => {
                   <label className="label">Moodle ID or College Email</label>
                   <input required className="input" placeholder="e.g. 23107062 or student@apsit.edu.in" value={searchVal} onChange={e => setSearchVal(e.target.value)} />
                 </div>
-                <button type="submit" className="btn btn-primary">Find My Registration <Search size={18} /></button>
+                <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>Find My Registration <Search size={18} /></button>
               </form>
             </>
           )}
@@ -155,7 +155,7 @@ const FeedbackForm = () => {
                       return (
                         <Star
                           key={star}
-                          size={36}
+                          size={window.innerWidth < 400 ? 28 : 36}
                           fill={filled ? 'var(--accent)' : 'none'}
                           color={filled ? 'var(--accent)' : 'var(--accent)'}
                           style={{ cursor: 'pointer', transition: 'transform 0.15s, opacity 0.15s', transform: filled ? 'scale(1.18)' : 'scale(1)', opacity: filled ? 1 : 0.3 }}

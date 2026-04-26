@@ -50,8 +50,8 @@ const Login = () => {
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
-      minHeight: 'calc(100vh - 100px)',
-      padding: '2rem'
+      minHeight: 'calc(100svh - 68px)',
+      padding: 'clamp(1rem, 4vw, 2rem)'
     }}>
       <motion.div
         initial={{ opacity: 0, y: 20 }}
@@ -113,7 +113,7 @@ const Login = () => {
               </button>
             </div>
           </div>
-          <button type="submit" disabled={loading} className="btn btn-primary" style={{ marginTop: '0.5rem', width: 'fit-content', marginInline: 'auto', paddingInline: '2rem' }}>
+          <button type="submit" disabled={loading} className="btn btn-primary" style={{ marginTop: '0.5rem', width: '100%' }}>
             {loading ? 'Logging in...' : 'Sign In'}
           </button>
           <div style={{ textAlign: 'center', marginTop: '1rem', fontSize: '0.85rem' }}>
