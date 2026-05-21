@@ -62,8 +62,18 @@ const EventRegistration = () => {
     }
     const { data, error } = await supabase
       .from('registrations').insert([{ event_id: id, ...formData }]).select().single();
-    if (data) { setTicketData(data); setSuccess(true); }
-    else alert(error.message);
+    
+    if (data) { 
+      setTicketData(data); 
+      setSuccess(true); 
+    } else {
+      // Check if it's an RLS violation or unique constraint violation (duplicate registration)
+      if (error.message.includes('row-level security') || error.code === '23505') {
+        alert("Registration failed: You have already registered for this event with these credentials.");
+      } else {
+        alert(`Registration failed: ${error.message}`);
+      }
+    }
     setRegistering(false);
   };
 

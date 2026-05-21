@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
@@ -17,6 +17,10 @@ const CreateEvent = () => {
   const [posterPreview, setPosterPreview] = useState(null);
   const [createdEvent, setCreatedEvent] = useState(null); // success state
   const [copied, setCopied] = useState(false);
+  const [copiedRegQR, setCopiedRegQR] = useState(false);
+  const [copiedFeedQR, setCopiedFeedQR] = useState(false);
+  const regQRRef = useRef(null);
+  const feedQRRef = useRef(null);
 
   const [formData, setFormData] = useState({
     name: '', description: '', venue: '', capacity: '', event_time: ''
@@ -103,6 +107,41 @@ const CreateEvent = () => {
     setTimeout(() => setCopiedFeedback(false), 2000);
   };
 
+  // Copy QR code SVG as PNG image to clipboard
+  const copyQRToClipboard = async (svgRef, setFlag) => {
+    try {
+      const svgEl = svgRef.current?.querySelector('svg');
+      if (!svgEl) return;
+      const svgData = new XMLSerializer().serializeToString(svgEl);
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      const img = new Image();
+      img.onload = async () => {
+        const size = 300;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(img, 0, 0, size, size);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(async (blob) => {
+          try {
+            await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+            setFlag(true);
+            setTimeout(() => setFlag(false), 2000);
+          } catch {
+            alert('Could not copy image. Try right-clicking the QR to save it.');
+          }
+        }, 'image/png');
+      };
+      img.src = url;
+    } catch {
+      alert('Could not copy QR image.');
+    }
+  };
+
   // ─── Success Screen ───────────────────────────────────────────
   if (createdEvent) {
     return (
@@ -145,17 +184,34 @@ const CreateEvent = () => {
 
           <div className="glass-card" style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
             <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '1.5rem', marginTop: 0 }}>Registration QR (scan to register)</p>
-            <div style={{ display: 'inline-block', background: 'white', padding: '1.25rem', borderRadius: 'var(--radius-md)' }}>
+            <div ref={regQRRef} style={{ display: 'inline-block', background: 'white', padding: '1.25rem', borderRadius: 'var(--radius-md)' }}>
               <QRCodeSVG value={registrationLink} size={180} level="H" />
+            </div>
+            <div style={{ marginTop: '1rem' }}>
+              <button
+                onClick={() => copyQRToClipboard(regQRRef, setCopiedRegQR)}
+                className="btn btn-ghost"
+                style={{ fontSize: '0.82rem', padding: '0.45rem 1.1rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+              >
+                {copiedRegQR ? <><Check size={14} /> QR Copied!</> : <><Copy size={14} /> Copy Registration QR</>}
+              </button>
             </div>
           </div>
 
           <div className="glass-card" style={{ textAlign: 'center', marginBottom: '2rem', border: '1px solid var(--accent-border)', background: 'var(--accent-bg)' }}>
             <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent)', marginBottom: '1.5rem', marginTop: 0 }}>Feedback QR <span style={{ fontSize: '0.65rem', fontWeight: 400, color: 'var(--text-muted)' }}>(share after event)</span></p>
-            <div style={{ display: 'inline-block', background: 'white', padding: '1.25rem', borderRadius: 'var(--radius-md)' }}>
+            <div ref={feedQRRef} style={{ display: 'inline-block', background: 'white', padding: '1.25rem', borderRadius: 'var(--radius-md)' }}>
               <QRCodeSVG value={feedbackLink} size={180} level="H" />
             </div>
-            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '1rem', marginBottom: 0 }}>Screenshot or print this to share for post-event feedback.</p>
+            <div style={{ marginTop: '1rem' }}>
+              <button
+                onClick={() => copyQRToClipboard(feedQRRef, setCopiedFeedQR)}
+                className="btn btn-ghost"
+                style={{ fontSize: '0.82rem', padding: '0.45rem 1.1rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', borderColor: 'var(--accent-border)', color: 'var(--accent)' }}
+              >
+                {copiedFeedQR ? <><Check size={14} /> QR Copied!</> : <><Copy size={14} /> Copy Feedback QR</>}
+              </button>
+            </div>
           </div>
 
           <div className="success-actions">

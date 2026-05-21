@@ -120,7 +120,7 @@ const EventCard = ({ event, index, navigate }) => (
         </div>
       </div>
       <button className="btn btn-ghost" style={{ width: '100%', fontSize: '0.85rem' }}>
-        Manage Event <ArrowRight size={16} />
+        Manage Event
       </button>
     </div>
   </motion.div>

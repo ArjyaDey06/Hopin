@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { supabase } from '../supabaseClient';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -24,10 +24,15 @@ const EventDetails = () => {
   const [deleting, setDeleting] = useState(false);
   const [copiedReg, setCopiedReg] = useState(false);
   const [copiedFeedback, setCopiedFeedback] = useState(false);
+  const [copiedRegQR, setCopiedRegQR] = useState(false);
+  const [copiedFeedQR, setCopiedFeedQR] = useState(false);
+  const regQRRef = useRef(null);
+  const feedQRRef = useRef(null);
   const [showQEditor, setShowQEditor] = useState(false);
   const [draftQuestions, setDraftQuestions] = useState([]);
   const [savingQ, setSavingQ] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
+  const [activeQRTab, setActiveQRTab] = useState('registration');
 
   const DEFAULT_QUESTIONS = [
     { id: 'q1', label: 'What did you like most?', placeholder: 'Your comments...', required: true },
@@ -79,6 +84,41 @@ const EventDetails = () => {
     navigator.clipboard.writeText(feedbackLink);
     setCopiedFeedback(true);
     setTimeout(() => setCopiedFeedback(false), 2000);
+  };
+
+  // Copy QR SVG as PNG image to clipboard
+  const copyQRToClipboard = async (svgRef, setFlag) => {
+    try {
+      const svgEl = svgRef.current?.querySelector('svg');
+      if (!svgEl) return;
+      const svgData = new XMLSerializer().serializeToString(svgEl);
+      const svgBlob = new Blob([svgData], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(svgBlob);
+      const img = new Image();
+      img.onload = async () => {
+        const size = 300;
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, size, size);
+        ctx.drawImage(img, 0, 0, size, size);
+        URL.revokeObjectURL(url);
+        canvas.toBlob(async (blob) => {
+          try {
+            await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+            setFlag(true);
+            setTimeout(() => setFlag(false), 2000);
+          } catch {
+            alert('Could not copy image. Try right-clicking the QR to save it.');
+          }
+        }, 'image/png');
+      };
+      img.src = url;
+    } catch {
+      alert('Could not copy QR image.');
+    }
   };
 
   useEffect(() => {
@@ -420,52 +460,84 @@ const EventDetails = () => {
             <img src={event.poster_url} style={{ width: '100%', borderRadius: 'var(--radius-md)', marginBottom: '1.5rem', maxHeight: '220px', objectFit: 'cover' }} alt="Poster" />
           )}
 
-          {/* Registration QR + Link */}
-          <div style={{ marginBottom: '1.25rem' }}>
-            <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.75rem', marginTop: 0 }}>Registration</p>
-            <div style={{ background: 'white', borderRadius: 'var(--radius-md)', padding: '1rem', display: 'flex', justifyContent: 'center', marginBottom: '0.75rem' }}>
-              <QRCodeSVG value={registrationLink} size={150} level="H" />
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <code style={{ flex: 1, padding: '0.5rem 0.6rem', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: '0.7rem', wordBreak: 'break-all', color: 'var(--text-h)', lineHeight: 1.4 }}>
-                {registrationLink}
-              </code>
-              <button onClick={handleCopyReg} className="btn btn-primary" style={{ flexShrink: 0, padding: '0.5rem' }}>
-                {copiedReg ? <Check size={14} /> : <Copy size={14} />}
-              </button>
-            </div>
+          {/* QR Tabs Container */}
+          <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '1.25rem', background: 'var(--bg)', padding: '0.25rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
+            <button
+              onClick={() => setActiveQRTab('registration')}
+              style={{ flex: 1, padding: '0.5rem', border: 'none', background: activeQRTab === 'registration' ? 'var(--accent)' : 'transparent', color: activeQRTab === 'registration' ? 'white' : 'var(--text-muted)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontWeight: 600, fontSize: '0.75rem', transition: 'all 0.2s' }}
+            >
+              Registration
+            </button>
+            <button
+              onClick={() => setActiveQRTab('feedback')}
+              style={{ flex: 1, padding: '0.5rem', border: 'none', background: activeQRTab === 'feedback' ? 'var(--accent)' : 'transparent', color: activeQRTab === 'feedback' ? 'white' : 'var(--text-muted)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontWeight: 600, fontSize: '0.75rem', transition: 'all 0.2s' }}
+            >
+              Feedback
+            </button>
           </div>
 
-          {/* Feedback QR + Link */}
-          <div style={{ marginBottom: '1.25rem', paddingTop: '1.25rem', borderTop: '1px solid var(--border)' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
-              <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', margin: 0 }}>
-                Feedback {event.status === 'finished' && <span style={{ color: '#ef4444', fontWeight: 400 }}>(closed)</span>}
-              </p>
+          {activeQRTab === 'registration' && (
+            <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} style={{ marginBottom: '1.25rem' }}>
+              <div ref={regQRRef} style={{ background: 'white', borderRadius: 'var(--radius-md)', padding: '1rem', display: 'flex', justifyContent: 'center', marginBottom: '0.5rem' }}>
+                <QRCodeSVG value={registrationLink} size={160} level="H" />
+              </div>
               <button
-                onClick={openQEditor}
-                style={{ border: 'none', background: 'var(--accent-bg)', color: 'var(--accent)', borderRadius: 'var(--radius-sm)', padding: '0.25rem 0.6rem', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                onClick={() => copyQRToClipboard(regQRRef, setCopiedRegQR)}
+                className="btn btn-ghost"
+                style={{ width: '100%', fontSize: '0.75rem', padding: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', marginBottom: '0.5rem' }}
               >
-                <Pencil size={11} /> Edit Questions
+                {copiedRegQR ? <><Check size={13} /> QR Copied!</> : <><Copy size={13} /> Copy QR Image</>}
               </button>
-            </div>
-            <div style={{ background: 'white', borderRadius: 'var(--radius-md)', padding: '1rem', display: 'flex', justifyContent: 'center', marginBottom: '0.75rem', position: 'relative' }}>
-              <QRCodeSVG value={feedbackLink} size={150} level="H" />
-              {event.status === 'finished' && (
-                <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <Lock size={36} color="white" />
-                </div>
-              )}
-            </div>
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-              <code style={{ flex: 1, padding: '0.5rem 0.6rem', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: '0.7rem', wordBreak: 'break-all', color: 'var(--text-h)', lineHeight: 1.4 }}>
-                {feedbackLink}
-              </code>
-              <button onClick={handleCopyFeedback} className="btn btn-primary" style={{ flexShrink: 0, padding: '0.5rem' }}>
-                {copiedFeedback ? <Check size={14} /> : <Copy size={14} />}
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <code style={{ flex: 1, padding: '0.5rem 0.6rem', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: '0.7rem', wordBreak: 'break-all', color: 'var(--text-h)', lineHeight: 1.4 }}>
+                  {registrationLink}
+                </code>
+                <button onClick={handleCopyReg} className="btn btn-primary" style={{ flexShrink: 0, padding: '0.5rem' }}>
+                  {copiedReg ? <Check size={14} /> : <Copy size={14} />}
+                </button>
+              </div>
+            </motion.div>
+          )}
+
+          {activeQRTab === 'feedback' && (
+            <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.2 }} style={{ marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+                <p style={{ fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', margin: 0 }}>
+                  {event.status === 'finished' ? <span style={{ color: '#ef4444' }}>Closed</span> : 'Active'}
+                </p>
+                <button
+                  onClick={openQEditor}
+                  style={{ border: 'none', background: 'var(--accent-bg)', color: 'var(--accent)', borderRadius: 'var(--radius-sm)', padding: '0.25rem 0.6rem', fontSize: '0.7rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem' }}
+                >
+                  <Pencil size={11} /> Edit Questions
+                </button>
+              </div>
+              <div ref={feedQRRef} style={{ background: 'white', borderRadius: 'var(--radius-md)', padding: '1rem', display: 'flex', justifyContent: 'center', marginBottom: '0.5rem', position: 'relative' }}>
+                <QRCodeSVG value={feedbackLink} size={160} level="H" />
+                {event.status === 'finished' && (
+                  <div style={{ position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)', borderRadius: 'var(--radius-md)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <Lock size={36} color="white" />
+                  </div>
+                )}
+              </div>
+              <button
+                onClick={() => copyQRToClipboard(feedQRRef, setCopiedFeedQR)}
+                disabled={event.status === 'finished'}
+                className="btn btn-ghost"
+                style={{ width: '100%', fontSize: '0.75rem', padding: '0.35rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', marginBottom: '0.5rem', borderColor: 'var(--accent-border)', color: 'var(--accent)' }}
+              >
+                {copiedFeedQR ? <><Check size={13} /> QR Copied!</> : <><Copy size={13} /> Copy QR Image</>}
               </button>
-            </div>
-          </div>
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <code style={{ flex: 1, padding: '0.5rem 0.6rem', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-sm)', fontSize: '0.7rem', wordBreak: 'break-all', color: 'var(--text-h)', lineHeight: 1.4 }}>
+                  {feedbackLink}
+                </code>
+                <button onClick={handleCopyFeedback} className="btn btn-primary" style={{ flexShrink: 0, padding: '0.5rem' }}>
+                  {copiedFeedback ? <Check size={14} /> : <Copy size={14} />}
+                </button>
+              </div>
+            </motion.div>
+          )}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '0.25rem', borderTop: '1px solid var(--border)' }}>
             <button onClick={async () => {
