@@ -173,19 +173,20 @@ const EventDetails = () => {
     setUpdatingCapacity(false);
   };
 
-  const closeArrivals = async () => {
-    if (!window.confirm("This will mark all arrived participants as 'Present'. Continue?")) return;
-    setClosing(true);
+  const toggleArrivals = async () => {
+    const isClosed = event.status === 'closed';
+    const newStatus = isClosed ? 'published' : 'closed';
     
+    setClosing(true);
     const { error } = await supabase
-      .from('registrations')
-      .update({ present: true })
-      .eq('event_id', id)
-      .eq('arrived', true);
+      .from('events')
+      .update({ status: newStatus })
+      .eq('id', id);
 
     if (!error) {
-      alert("Arrivals closed and attendance marked!");
       fetchEventAndAttendees();
+    } else {
+      alert("Update failed: " + error.message);
     }
     setClosing(false);
   };
@@ -240,21 +241,9 @@ const EventDetails = () => {
           <ArrowLeft size={18} /> Dashboard
         </button>
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.6rem' }}>
-           <button 
-             onClick={fetchEventAndAttendees} 
-             disabled={refreshing}
-             className="btn btn-ghost" 
-             style={{ gap: '0.4rem' }}
-           >
-             <RefreshCw size={18} className={refreshing ? 'spin' : ''} /> 
-             {refreshing ? 'Refreshing...' : 'Refresh'}
-           </button>
 
-           <button onClick={() => {
-             const url = `${window.location.origin}/event/${id}`;
-             navigator.clipboard.writeText(url);
-             alert("Registration link copied!");
-           }} className="btn btn-ghost"><Share2 size={18} /> Invite Link</button>
+
+
            
            {event.status === 'finished' ? (
              <button
@@ -374,6 +363,15 @@ const EventDetails = () => {
             <div className="attendee-header" style={{ padding: '1.5rem', borderBottom: '1px solid var(--glass-border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
                <h3 style={{ fontSize: '1.2rem', margin: 0 }}>Attendee List</h3>
                <div className="attendee-actions" style={{ display: 'flex', gap: '0.5rem', flex: 1, justifyContent: 'flex-end', alignItems: 'center' }}>
+                 <button 
+                   onClick={fetchEventAndAttendees} 
+                   disabled={refreshing}
+                   className="btn-ghost" 
+                   title="Refresh Attendees"
+                   style={{ padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', background: 'transparent', color: 'var(--text-muted)' }}
+                 >
+                   <RefreshCw size={16} className={refreshing ? 'spin' : ''} />
+                 </button>
                  <input 
                    type="text" 
                    className="input" 
@@ -383,7 +381,7 @@ const EventDetails = () => {
                    style={{ maxWidth: '250px', padding: '0.4rem 0.8rem', margin: 0 }}
                  />
                  <button onClick={exportToCSV} className="btn-ghost" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '0.5rem', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', cursor: 'pointer', background: 'transparent', color: 'var(--text)', whiteSpace: 'nowrap', flexShrink: 0 }}><FileText size={14} /> CSV</button>
-                 <button onClick={closeArrivals} disabled={closing || event.status === 'finished'} className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0 }}>{closing ? 'Closing...' : 'Close Arrivals'}</button>
+                 <button onClick={toggleArrivals} disabled={closing || event.status === 'finished'} className="btn-primary" style={{ padding: '0.5rem 1rem', fontSize: '0.8rem', background: 'var(--accent)', color: 'white', border: 'none', borderRadius: 'var(--radius-md)', cursor: 'pointer', fontWeight: 600, whiteSpace: 'nowrap', flexShrink: 0 }}>{closing ? 'Updating...' : event.status === 'closed' ? 'Open Arrivals' : 'Close Arrivals'}</button>
                </div>
             </div>
             <div className="attendee-scroll" style={{ overflowX: 'auto', overflowY: 'auto', minHeight: '450px', maxHeight: '450px', WebkitOverflowScrolling: 'touch' }}>
@@ -541,7 +539,7 @@ const EventDetails = () => {
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', paddingTop: '0.25rem', borderTop: '1px solid var(--border)' }}>
             <button onClick={async () => {
-              if (window.confirm("Finish this event? Students will be able to submit feedback.")) {
+              if (window.confirm("Finish this event? Students will be able to submit feedback, and registrations will be closed.")) {
                 await supabase.from('events').update({ status: 'finished' }).eq('id', id);
                 fetchEventAndAttendees();
               }
@@ -674,8 +672,8 @@ const EventDetails = () => {
         
         @media (max-width: 600px) {
           .attendee-header { flex-direction: column; align-items: flex-start !important; gap: 0.75rem; }
-          .attendee-actions { width: 100%; justify-content: flex-start; }
-          .attendee-actions input { flex: 1; max-width: 100% !important; }
+          .attendee-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
+          .attendee-actions input { flex: 1 1 100% !important; max-width: 100% !important; }
           .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.5rem !important; }
         }
 

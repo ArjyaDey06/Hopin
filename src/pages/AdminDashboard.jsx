@@ -65,7 +65,7 @@ const AdminDashboard = () => {
           <h2 style={{ fontSize: '1.2rem', textTransform: 'uppercase', letterSpacing: '0.1em', color: 'var(--text-muted)', marginBottom: '2rem', display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div style={{ width: '8px', height: '8px', borderRadius: '50%', background: 'currentColor' }}></div> Past Events
           </h2>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '2rem', opacity: 0.8 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(min(280px, 100%), 1fr))', gap: '2rem', opacity: 0.8 }}>
             {pastEvents.map((event, index) => (
               <EventCard key={event.id} event={event} index={index + 10} navigate={navigate} />
             ))}

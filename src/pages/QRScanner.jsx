@@ -237,7 +237,7 @@ const QRScanner = () => {
                 <>
                   <CheckCircle size={44} style={{ color: '#10b981', marginBottom: '0.75rem' }} />
                   <h2 style={{ marginBottom: '1rem', marginTop: 0, color: '#10b981' }}>Marked as Arrived!</h2>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', textAlign: 'left' }}>
+                  <div className="result-grid">
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
                       <User size={15} color="var(--accent)" /> {scanResult.participant.participant_name}
                     </div>
@@ -284,6 +284,10 @@ const QRScanner = () => {
           0%   { top: 0; opacity: 1; }
           50%  { top: calc(100% - 2px); opacity: 1; }
           100% { top: 0; opacity: 1; }
+        }
+        .result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; text-align: left; }
+        @media (max-width: 480px) {
+          .result-grid { grid-template-columns: 1fr; gap: 0.5rem; }
         }
       `}</style>
     </div>

@@ -159,7 +159,7 @@ const EventRegistration = () => {
   if (loading) return <div className="container" style={{ textAlign: 'center', padding: '5rem' }}>Loading event details...</div>;
   if (!event) return <div className="container" style={{ textAlign: 'center', padding: '5rem' }}>Event not found.</div>;
 
-  if (event.status === 'finished') return (
+  if (event.status === 'finished' || event.status === 'closed') return (
     <div className="container" style={{ padding: 'clamp(1.5rem, 5vw, 3rem) 1rem' }}>
       <div style={{ maxWidth: '500px', margin: '0 auto' }}>
         <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} className="glass-card" style={{ padding: '3rem', textAlign: 'center' }}>
@@ -167,7 +167,7 @@ const EventRegistration = () => {
             <Lock size={32} color="var(--accent)" />
           </div>
           <h1 style={{ fontSize: '2rem', marginBottom: '0.75rem', marginTop: 0 }}>Registrations Closed</h1>
-          <p style={{ color: 'var(--text-muted)', margin: 0 }}><strong>{event.name}</strong> has ended and is no longer accepting new registrations.</p>
+          <p style={{ color: 'var(--text-muted)', margin: 0 }}><strong>{event.name}</strong> is currently not accepting new registrations.</p>
         </motion.div>
       </div>
     </div>
