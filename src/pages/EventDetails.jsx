@@ -416,7 +416,9 @@ const EventDetails = () => {
                   )) : (
                     <tr>
                       <td colSpan="4" style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-                        No participants found matching "{searchTerm}".
+                        {searchTerm 
+                          ? `No participants found matching "${searchTerm}".`
+                          : "No participants registered yet."}
                       </td>
                     </tr>
                   )}
