@@ -33,7 +33,6 @@ const AdminDashboard = () => {
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'clamp(1rem, 4vw, 1.5rem)', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: 'clamp(2rem, 8vw, 4rem)' }}>
         <div>
           <h1 style={{ fontSize: 'clamp(2rem, 8vw, 3rem)', marginBottom: '0.5rem', marginTop: 0 }}>Dashboard</h1>
-          <p style={{ color: 'var(--text-muted)' }}>Manage your institute's events and registrations.</p>
         </div>
         <button onClick={() => navigate('/admin/event/new')} className="btn btn-primary" style={{ padding: '0.6rem 1.5rem' }}>
           <Plus size={18} /> Create Event
