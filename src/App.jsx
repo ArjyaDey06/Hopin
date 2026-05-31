@@ -4,6 +4,7 @@ import Navbar from './components/Navbar';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import AdminDashboard from './pages/AdminDashboard';
+import Analytics from './pages/Analytics';
 import CreateEvent from './pages/CreateEvent';
 import EventRegistration from './pages/EventRegistration';
 import EventDetails from './pages/EventDetails';
@@ -58,6 +59,11 @@ function AppInner() {
         <Route path="/admin" element={
           <ProtectedRoute>
             <AdminDashboard />
+          </ProtectedRoute>
+        } />
+        <Route path="/admin/analytics" element={
+          <ProtectedRoute>
+            <Analytics />
           </ProtectedRoute>
         } />
         <Route path="/admin/event/new" element={

@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { supabase } from '../supabaseClient';
-import { LogOut, Calendar, Shield, User, Menu, X, Pencil, Check } from 'lucide-react';
+import { LogOut, Calendar, Shield, User, Menu, X, Pencil, Check, BarChart2 } from 'lucide-react';
 
 const Navbar = () => {
   const { user, profile } = useAuth();
@@ -81,6 +81,9 @@ const Navbar = () => {
             <Link to="/admin" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', textDecoration: 'none', color: 'var(--text)', fontSize: '0.9rem', fontWeight: 600 }}>
               <Calendar size={16} /> Dashboard
             </Link>
+            <Link to="/admin/analytics" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', textDecoration: 'none', color: 'var(--text)', fontSize: '0.9rem', fontWeight: 600 }}>
+              <BarChart2 size={16} /> Analytics
+            </Link>
 
             {/* User chip — click to edit name */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 1rem', background: 'var(--bg)', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)', fontSize: '0.85rem', color: 'var(--text-h)' }}>
@@ -134,6 +137,9 @@ const Navbar = () => {
             </div>
             <Link to="/admin" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'var(--text-h)', fontWeight: 600 }}>
               <Calendar size={18} /> Dashboard
+            </Link>
+            <Link to="/admin/analytics" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'var(--text-h)', fontWeight: 600 }}>
+              <BarChart2 size={18} /> Analytics
             </Link>
             {profile?.role === 'superadmin' && (
               <Link to="/admin/manage" onClick={() => setMenuOpen(false)} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', textDecoration: 'none', color: 'var(--text-h)', fontWeight: 600 }}>
