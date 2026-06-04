@@ -2,7 +2,7 @@ import { useState, useRef } from 'react';
 import { supabase } from '../supabaseClient';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
-import { Calendar, MapPin, Users, Plus, Trash2, ArrowLeft, Save, Copy, Check, Image as ImageIcon } from 'lucide-react';
+import { Calendar, MapPin, Users, Plus, Trash2, ArrowLeft, Save, Copy, Check, Image as ImageIcon, CheckCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { QRCodeSVG } from 'qrcode.react';
 
@@ -21,6 +21,7 @@ const CreateEvent = () => {
   const [copiedFeedQR, setCopiedFeedQR] = useState(false);
   const regQRRef = useRef(null);
   const feedQRRef = useRef(null);
+  const [activeTab, setActiveTab] = useState('registration');
 
   const [formData, setFormData] = useState({
     name: '', description: '', venue: '', capacity: '', event_time: ''
@@ -79,6 +80,7 @@ const CreateEvent = () => {
 
     if (data) {
       setCreatedEvent(data);
+      window.scrollTo(0, 0);
     } else {
       alert(error.message);
     }
@@ -145,76 +147,78 @@ const CreateEvent = () => {
   // ─── Success Screen ───────────────────────────────────────────
   if (createdEvent) {
     return (
-    <div className="container" style={{ padding: 'clamp(1rem, 5vw, 3rem) 1rem' }}>
+      <div className="container" style={{ padding: 'clamp(1rem, 5vw, 3rem) 1rem' }}>
         <motion.div
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           className="success-wrapper"
-          style={{ maxWidth: '560px', margin: '0 auto' }}>
+          style={{ maxWidth: '600px', margin: '0 auto' }}>
 
           <div style={{ textAlign: 'center', marginBottom: '2.5rem' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '0.75rem' }}>🎉</div>
-            <h1 style={{ marginBottom: '0.5rem', marginTop: 0 }}>Event Published!</h1>
-            <p style={{ color: 'var(--text-muted)' }}>Share this link with students to let them register.</p>
+            <div style={{ display: 'inline-flex', alignItems: 'center', justifyContent: 'center', width: '64px', height: '64px', borderRadius: '50%', background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', marginBottom: '1.25rem' }}>
+              <CheckCircle size={32} />
+            </div>
+            <h1 style={{ marginBottom: '0.5rem', marginTop: 0, fontSize: '2rem' }}>Event Published Successfully</h1>
+            <p style={{ color: 'var(--text-muted)' }}>Your event is now live. Share the registration link with students.</p>
           </div>
 
-          <div className="glass-card" style={{ marginBottom: '1.5rem' }}>
-            <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.75rem', marginTop: 0 }}>Registration Link</p>
-            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-              <code style={{ flex: 1, padding: '0.5rem', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', fontSize: '0.75rem', wordBreak: 'break-all', color: 'var(--text-h)' }}>
-                {registrationLink}
-              </code>
-              <button onClick={handleCopy} className="btn btn-primary" style={{ flexShrink: 0, padding: '0.5rem' }}>
-                {copied ? <Check size={16} /> : <Copy size={16} />}
-              </button>
-            </div>
-          </div>
-
-          <div className="glass-card" style={{ marginBottom: '1.5rem', border: '1px solid var(--accent-border)', background: 'var(--accent-bg)' }}>
-            <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent)', marginBottom: '0.75rem', marginTop: 0 }}>Feedback Link <span style={{ fontSize: '0.65rem', fontWeight: 400, color: 'var(--text-muted)' }}>(share after event)</span></p>
-            <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
-              <code style={{ flex: 1, padding: '0.5rem', background: 'var(--bg)', border: '1px solid var(--accent-border)', borderRadius: 'var(--radius-md)', fontSize: '0.75rem', wordBreak: 'break-all', color: 'var(--accent)' }}>
-                {feedbackLink}
-              </code>
-              <button onClick={handleCopyFeedback} className="btn btn-primary" style={{ flexShrink: 0, padding: '0.5rem', background: 'var(--accent)' }}>
-                {copiedFeedback ? <Check size={16} /> : <Copy size={16} />}
-              </button>
-            </div>
-          </div>
-
-          <div className="glass-card" style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-            <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '1.5rem', marginTop: 0 }}>Registration QR (scan to register)</p>
-            <div ref={regQRRef} style={{ display: 'inline-block', background: 'white', padding: '1.25rem', borderRadius: 'var(--radius-md)' }}>
-              <QRCodeSVG value={registrationLink} size={180} level="H" />
-            </div>
-            <div style={{ marginTop: '1rem' }}>
+          <div className="glass-card" style={{ padding: '2rem' }}>
+            {/* Tabs */}
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '2rem', background: 'var(--bg)', padding: '0.35rem', borderRadius: 'var(--radius-md)', border: '1px solid var(--border)' }}>
               <button
-                onClick={() => copyQRToClipboard(regQRRef, setCopiedRegQR)}
-                className="btn btn-ghost"
-                style={{ fontSize: '0.82rem', padding: '0.45rem 1.1rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem' }}
+                onClick={() => setActiveTab('registration')}
+                style={{ flex: 1, padding: '0.75rem', border: 'none', background: activeTab === 'registration' ? 'var(--accent)' : 'transparent', color: activeTab === 'registration' ? 'white' : 'var(--text-muted)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
               >
-                {copiedRegQR ? <><Check size={14} /> QR Copied!</> : <><Copy size={14} /> Copy Registration QR</>}
+                Registration Form
               </button>
-            </div>
-          </div>
-
-          <div className="glass-card" style={{ textAlign: 'center', marginBottom: '2rem', border: '1px solid var(--accent-border)', background: 'var(--accent-bg)' }}>
-            <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--accent)', marginBottom: '1.5rem', marginTop: 0 }}>Feedback QR <span style={{ fontSize: '0.65rem', fontWeight: 400, color: 'var(--text-muted)' }}>(share after event)</span></p>
-            <div ref={feedQRRef} style={{ display: 'inline-block', background: 'white', padding: '1.25rem', borderRadius: 'var(--radius-md)' }}>
-              <QRCodeSVG value={feedbackLink} size={180} level="H" />
-            </div>
-            <div style={{ marginTop: '1rem' }}>
               <button
-                onClick={() => copyQRToClipboard(feedQRRef, setCopiedFeedQR)}
-                className="btn btn-ghost"
-                style={{ fontSize: '0.82rem', padding: '0.45rem 1.1rem', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', borderColor: 'var(--accent-border)', color: 'var(--accent)' }}
+                onClick={() => setActiveTab('feedback')}
+                style={{ flex: 1, padding: '0.75rem', border: 'none', background: activeTab === 'feedback' ? 'var(--accent)' : 'transparent', color: activeTab === 'feedback' ? 'white' : 'var(--text-muted)', borderRadius: 'var(--radius-sm)', cursor: 'pointer', fontWeight: 600, fontSize: '0.85rem', transition: 'all 0.2s' }}
               >
-                {copiedFeedQR ? <><Check size={14} /> QR Copied!</> : <><Copy size={14} /> Copy Feedback QR</>}
+                Feedback Form
               </button>
             </div>
+
+            {/* Tab Content */}
+            <AnimatePresence mode="wait">
+              <motion.div
+                key={activeTab}
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                transition={{ duration: 0.2 }}
+                style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}
+              >
+                <div ref={activeTab === 'registration' ? regQRRef : feedQRRef} style={{ background: 'white', padding: '1.5rem', borderRadius: 'var(--radius-md)', display: 'inline-block', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}>
+                  <QRCodeSVG value={activeTab === 'registration' ? registrationLink : feedbackLink} size={200} level="H" />
+                </div>
+                
+                <button
+                  onClick={() => copyQRToClipboard(activeTab === 'registration' ? regQRRef : feedQRRef, activeTab === 'registration' ? setCopiedRegQR : setCopiedFeedQR)}
+                  className="btn btn-ghost"
+                  style={{ fontSize: '0.85rem', padding: '0.5rem 1.2rem', display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}
+                >
+                  {(activeTab === 'registration' ? copiedRegQR : copiedFeedQR) ? <><Check size={16} /> QR Image Copied!</> : <><Copy size={16} /> Copy QR Image</>}
+                </button>
+
+                <div style={{ width: '100%', marginTop: '0.5rem' }}>
+                  <p style={{ fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.08em', color: 'var(--text-muted)', marginBottom: '0.75rem', marginTop: 0 }}>
+                    {activeTab === 'registration' ? 'Direct Link' : 'Direct Link (Share after event)'}
+                  </p>
+                  <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                    <code style={{ flex: 1, padding: '0.75rem', background: 'var(--bg)', border: '1px solid var(--border)', borderRadius: 'var(--radius-md)', fontSize: '0.85rem', wordBreak: 'break-all', color: 'var(--text-h)' }}>
+                      {activeTab === 'registration' ? registrationLink : feedbackLink}
+                    </code>
+                    <button onClick={activeTab === 'registration' ? handleCopy : handleCopyFeedback} className="btn btn-primary" style={{ flexShrink: 0, padding: '0.75rem' }}>
+                      {(activeTab === 'registration' ? copied : copiedFeedback) ? <Check size={18} /> : <Copy size={18} />}
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </AnimatePresence>
           </div>
 
-          <div className="success-actions">
+          <div className="success-actions" style={{ display: 'flex', gap: '1rem', marginTop: '2.5rem' }}>
             <button onClick={() => navigate(`/admin/event/${createdEvent.id}`)} className="btn btn-primary" style={{ flex: '1 1 200px' }}>
               View Event Dashboard
             </button>
@@ -222,6 +226,7 @@ const CreateEvent = () => {
               Back to Home
             </button>
           </div>
+
         </motion.div>
       </div>
     );
