@@ -351,22 +351,28 @@ const CreateEvent = () => {
       <style>{`
         .ev-label { display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.4rem; font-size: 0.8rem; font-weight: 600; color: var(--text-muted); }
         .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-        
+
         /* Prioritized Media Queries */
-        @media (max-width: 600px) { 
-          .two-col { grid-template-columns: 1fr !important; } 
+        @media (max-width: 600px) {
+          .two-col { grid-template-columns: 1fr !important; }
           .success-actions { flex-direction: column !important; }
           .success-actions button { width: 100% !important; }
         }
-        
-        /* Fluid spacing using clamp() for sparse sections */
-        .success-wrapper > div {
-          margin-bottom: clamp(1rem, 4vw, 1.5rem) !important;
-        }
+
+        /* Success screen actions */
         .success-actions {
           display: flex;
-          gap: clamp(0.75rem, 3vw, 1rem);
-          margin-top: clamp(1.5rem, 5vw, 2.5rem);
+          gap: 1rem;
+          margin-top: 2.5rem;
+          flex-wrap: wrap;
+        }
+
+        .success-actions button {
+          flex: 1 1 180px;
+        }
+
+        @media (max-width: 480px) {
+          .success-actions { gap: 0.75rem; margin-top: 1.5rem; }
         }
       `}</style>
     </div>

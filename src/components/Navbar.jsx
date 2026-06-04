@@ -155,7 +155,7 @@ const Navbar = () => {
         <style>{`
           /* Default: hamburger hidden, desktop nav visible */
           .nav-hamburger { display: none; }
-          @media (max-width: 640px) {
+          @media (max-width: 768px) {
             .nav-desktop { display: none !important; }
             .nav-hamburger { display: flex !important; align-items: center; }
           }

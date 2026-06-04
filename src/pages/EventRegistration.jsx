@@ -282,22 +282,30 @@ const EventRegistration = () => {
 
       <style>{`
         .reg-label { display: flex; align-items: center; gap: 0.4rem; margin-bottom: 0.4rem; font-size: clamp(0.75rem, 2.5vw, 0.8rem); color: var(--text-muted); font-weight: 600; }
-        /* Prioritized Media Queries for structural shifts */
-        @media (max-width: 768px) {
-          .reg-layout { grid-template-columns: 1fr !important; gap: clamp(1rem, 4vw, 1.5rem) !important; }
-          .two-col-form { grid-template-columns: 1fr !important; gap: 0.75rem !important; }
+
+        /* Layout */
+        .reg-layout {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: clamp(1.5rem, 5vw, 3rem);
+          align-items: start;
+          max-width: 1000px;
+          margin: 0 auto;
         }
 
-        .reg-layout { 
-          display: grid; 
-          grid-template-columns: 1fr 1fr; 
-          gap: clamp(1.5rem, 5vw, 3rem); 
-          align-items: start; 
-          max-width: 1000px; 
-          margin: 0 auto; 
-        }
+        /* Two-col form fields */
         .two-col-form { display: grid; grid-template-columns: 1fr 1fr; gap: clamp(0.75rem, 3vw, 1rem); }
-        select.input { cursor: pointer; }
+
+        /* Tablet: stack the layout */
+        @media (max-width: 768px) {
+          .reg-layout { grid-template-columns: 1fr !important; gap: clamp(1rem, 4vw, 1.5rem) !important; }
+          .two-col-form { grid-template-columns: 1fr 1fr !important; }
+        }
+
+        /* Mobile: stack two-col form fields too */
+        @media (max-width: 480px) {
+          .two-col-form { grid-template-columns: 1fr !important; gap: 0.75rem !important; }
+        }
       `}</style>
     </div>
   );

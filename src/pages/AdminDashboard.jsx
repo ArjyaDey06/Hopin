@@ -497,7 +497,7 @@ const AdminDashboard = () => {
 
         /* ── Responsive ── */
         @media (max-width: 768px) {
-          .dash-root { padding: 1.5rem 1rem 3rem; }
+          .dash-root { padding: 1.5rem 0.75rem 3rem; }
           .dash-table { display: none; }
           .dash-card-list { display: block; }
           .dash-stat-strip {
@@ -506,14 +506,19 @@ const AdminDashboard = () => {
           }
           .dash-stat-card { padding: 1rem; }
           .dash-stat-value { font-size: 1.75rem; }
+          .dash-create-btn { min-height: 44px; padding: 0 1rem; }
+          .dash-refresh-btn { width: 44px; height: 44px; }
         }
 
         @media (max-width: 480px) {
-          .dash-stat-strip { grid-template-columns: repeat(3, 1fr); gap: 0.5rem; }
-          .dash-stat-card { padding: 0.875rem 0.75rem; }
-          .dash-stat-value { font-size: 1.5rem; }
+          .dash-root { padding: 1rem 0.625rem 2.5rem; }
+          .dash-stat-strip { grid-template-columns: repeat(3, 1fr); gap: 0.4rem; }
+          .dash-stat-card { padding: 0.75rem 0.6rem; }
+          .dash-stat-value { font-size: 1.4rem; }
           .dash-stat-sub { display: none; }
-          .dash-header { margin-bottom: 1.5rem; }
+          .dash-header { margin-bottom: 1.25rem; }
+          .dash-title { font-size: 1.35rem !important; }
+          .dash-table-header { padding: 0.875rem 1rem; }
         }
       `}</style>
     </div>

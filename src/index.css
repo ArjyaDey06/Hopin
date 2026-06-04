@@ -65,6 +65,8 @@ body {
   margin: 0;
   background: var(--bg);
   color: var(--text);
+  /* Prevent horizontal overflow on mobile */
+  overflow-x: hidden;
 }
 
 #root {
@@ -130,6 +132,10 @@ h1 {
   font-size: 0.9rem;
   background: var(--bg);
   color: var(--text-h);
+  /* Minimum touch target size for accessibility */
+  min-height: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .btn-primary {
@@ -169,11 +175,27 @@ h1 {
   /* Prevent iOS auto-zoom on focus (requires font-size >= 16px) */
   font-size: max(16px, 0.9rem);
   font-family: var(--sans);
+  /* Improve touch experience */
+  -webkit-appearance: none;
+  appearance: none;
+  min-height: 44px;
+  touch-action: manipulation;
 }
 
 .input:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 4px var(--accent-bg);
+}
+
+/* Fix select appearance on iOS */
+select.input {
+  cursor: pointer;
+  -webkit-appearance: none;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%234a5568' stroke-width='2'%3E%3Cpath d='M6 9l6 6 6-6'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.8rem center;
+  padding-right: 2.25rem;
 }
 
 .badge {
@@ -197,12 +219,17 @@ h1 {
   .container { padding: 0 0.75rem; }
   .glass-card { padding: 1.25rem 1rem; }
   .btn { 
-    min-height: 40px; 
+    min-height: 44px; 
     padding: 0.6rem 1rem;
     font-size: 0.85rem;
   }
   h1 { font-size: clamp(1.75rem, 8vw, 2.5rem); margin: 1rem 0; }
   h2 { font-size: 1.25rem; }
+}
+
+@media (max-width: 480px) {
+  .container { padding: 0 0.625rem; }
+  .glass-card { padding: 1rem 0.875rem; }
 }
 
 /* ── Rotating Text ── */

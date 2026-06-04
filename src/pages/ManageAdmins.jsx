@@ -127,9 +127,25 @@ const ManageAdmins = () => {
       </div>
 
       <style>{`
-        @media (max-width: 640px) {
+        @media (max-width: 700px) {
           .manage-table { display: none !important; }
           .manage-cards { display: flex !important; }
+        }
+
+        .role-btn-group {
+          display: flex;
+          gap: 0.4rem;
+          flex-wrap: wrap;
+        }
+
+        .role-btn-group button {
+          min-height: 36px;
+          touch-action: manipulation;
+        }
+
+        @media (max-width: 480px) {
+          .role-btn-group { gap: 0.3rem; }
+          .role-btn-group button { padding: 0.3rem 0.6rem !important; font-size: 0.7rem !important; }
         }
       `}</style>
     </div>

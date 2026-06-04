@@ -263,7 +263,7 @@ const EventDetails = () => {
         </div>
       </div>
 
-      <div className="grid-details" style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem', alignItems: 'start' }}>
+      <div className="grid-details">
         <div>
           <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="glass-card" style={{ padding: '2rem', marginBottom: '2rem' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
@@ -667,35 +667,82 @@ const EventDetails = () => {
       <style>{`
         @keyframes spin { to { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
-        
-        /* Media Queries - First Priority for structural shifts */
-        @media (max-width: 900px) {
-          .grid-details { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
-          .event-controls-card { maxHeight: none !important; }
-        }
-        
-        @media (max-width: 600px) {
-          .attendee-header { flex-direction: column; align-items: flex-start !important; gap: 0.75rem; }
-          .attendee-actions { width: 100%; justify-content: flex-start; flex-wrap: wrap; }
-          .attendee-actions input { flex: 1 1 100% !important; max-width: 100% !important; }
-          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.5rem !important; }
+
+        /* ── Main Layout Grid ── */
+        .grid-details {
+          display: grid;
+          grid-template-columns: 2fr 1fr;
+          gap: 2rem;
+          align-items: start;
         }
 
-        /* Fluid spacing with clamp() for areas with fewer elements */
+        /* Tablet: stack to single column */
+        @media (max-width: 960px) {
+          .grid-details { grid-template-columns: 1fr !important; gap: 1.5rem !important; }
+          .event-controls-card { max-height: none !important; }
+        }
+
+        /* ── Stats Grid ── */
         .stats-grid {
           display: grid;
           grid-template-columns: repeat(5, 1fr);
           gap: clamp(0.5rem, 2vw, 1rem);
+          margin-bottom: 2rem;
         }
-        
-        /* Table / Grid Overflow handling */
-        .attendee-scroll, .event-controls-card { 
-          overflow: auto; 
-          -webkit-overflow-scrolling: touch; 
+
+        @media (max-width: 768px) {
+          .stats-grid { grid-template-columns: repeat(3, 1fr) !important; gap: 0.5rem !important; }
+        }
+
+        @media (max-width: 480px) {
+          .stats-grid { grid-template-columns: repeat(2, 1fr) !important; gap: 0.5rem !important; }
+        }
+
+        /* ── Attendee Table Header ── */
+        .attendee-header {
+          padding: 1.5rem;
+          border-bottom: 1px solid var(--glass-border);
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 0.75rem;
+        }
+
+        @media (max-width: 768px) {
+          .attendee-header { flex-direction: column; align-items: flex-start !important; gap: 0.75rem; }
+          .attendee-actions { width: 100% !important; justify-content: flex-start !important; flex-wrap: wrap !important; }
+          .attendee-actions input { flex: 1 1 100% !important; max-width: 100% !important; order: -1; }
+          .attendee-actions button { min-height: 40px; }
+        }
+
+        @media (max-width: 480px) {
+          .attendee-header h3 { font-size: 1rem; }
+          .attendee-actions { gap: 0.4rem !important; }
+        }
+
+        /* ── Attendee Table Scroll ── */
+        .attendee-scroll {
+          overflow-x: auto;
+          overflow-y: auto;
+          min-height: 450px;
+          max-height: 450px;
+          -webkit-overflow-scrolling: touch;
           scrollbar-width: thin;
         }
+
         .attendee-scroll table { min-width: 480px; }
-        
+
+        /* ── Event Controls Card ── */
+        .event-controls-card {
+          overflow: auto;
+          -webkit-overflow-scrolling: touch;
+          scrollbar-width: thin;
+          max-height: 100svh;
+          overflowY: auto;
+        }
+
+        /* ── Capacity Edit Mini Buttons ── */
         .action-btn-mini {
           border: none;
           border-radius: 4px;
@@ -703,9 +750,16 @@ const EventDetails = () => {
           cursor: pointer;
           display: flex;
           align-items: center;
+          min-height: 32px;
+          touch-action: manipulation;
         }
         .action-btn-mini.success { background: rgba(16,185,129,0.15); color: #10b981; }
         .action-btn-mini.danger  { background: rgba(239,68,68,0.15);  color: #ef4444; }
+
+        /* ── QR Tab & Controls ── */
+        @media (max-width: 480px) {
+          .event-controls-card { padding: 1rem !important; }
+        }
       `}</style>
     </div>
   );
