@@ -300,6 +300,8 @@ const EventDetails = () => {
                   <>
                     <input 
                       type="number"
+                      min="1"
+                      onWheel={(e) => e.target.blur()}
                       autoFocus
                       placeholder="∞"
                       value={tempCapacity}

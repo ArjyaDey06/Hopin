@@ -297,7 +297,7 @@ const CreateEvent = () => {
 
             <div style={{ marginTop: '1.5rem' }}>
               <label className="ev-label"><Users size={13} /> Venue Capacity (optional)</label>
-              <input type="number" className="input" placeholder="Leave blank for unlimited registrations" value={formData.capacity} onChange={e => setFormData({...formData, capacity: e.target.value})} />
+              <input type="number" min="1" onWheel={(e) => e.target.blur()} className="input" placeholder="Leave blank for unlimited registrations" value={formData.capacity} onChange={e => setFormData({...formData, capacity: e.target.value})} />
             </div>
           </motion.div>
 
