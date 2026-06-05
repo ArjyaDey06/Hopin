@@ -25,7 +25,11 @@ const ManageAdmins = () => {
 
   const fetchUsers = async () => {
     setLoading(true);
-    const { data } = await supabase.from('profiles').select('*').order('full_name', { ascending: true });
+    const { data } = await supabase
+      .from('profiles')
+      .select('*')
+      .in('role', ['admin', 'superadmin'])
+      .order('full_name', { ascending: true });
     if (data) setUsers(data);
     setLoading(false);
   };
@@ -154,7 +158,7 @@ const ManageAdmins = () => {
 
 const RoleButtons = ({ userId, currentRole, updating, updateRole }) => (
   <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }} className="role-btn-group">
-    {['user', 'admin', 'superadmin'].map(role => (
+    {['admin', 'superadmin'].map(role => (
       <button
         key={role}
         onClick={() => updateRole(userId, role)}
