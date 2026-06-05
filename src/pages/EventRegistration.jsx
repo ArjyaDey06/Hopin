@@ -80,80 +80,122 @@ const EventRegistration = () => {
   const downloadTicket = () => {
     const svg = document.getElementById("ticket-qr");
     const clone = svg.cloneNode(true);
-    const scale = 4; // Increase resolution
-    const originalWidth = parseInt(clone.getAttribute("width") || 180);
-    const originalHeight = parseInt(clone.getAttribute("height") || 180);
-    clone.setAttribute("width", originalWidth * scale);
-    clone.setAttribute("height", originalHeight * scale);
+    const scale = 4;
+    const qrSize = 110; // sensible QR size (110 logical → 440px on canvas)
+    clone.setAttribute("width", qrSize * scale);
+    clone.setAttribute("height", qrSize * scale);
 
     const svgData = new XMLSerializer().serializeToString(clone);
+
+    // Canvas dimensions: 16:9 landscape
+    const canvasW = 1600;
+    const canvasH = 900;
     const canvas = document.createElement("canvas");
+    canvas.width = canvasW;
+    canvas.height = canvasH;
     const ctx = canvas.getContext("2d");
 
     const qrImg = new Image();
     const logoImg = new Image();
+    let loaded = 0;
 
-    let imagesLoaded = 0;
-    const onImageLoad = () => {
-      imagesLoaded++;
-      if (imagesLoaded === 2) {
-        const qrWidth = qrImg.width;
-        const qrHeight = qrImg.height;
+    const draw = () => {
+      // White background
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, canvasW, canvasH);
 
-        canvas.width = qrWidth + (80 * scale);
-        canvas.height = qrHeight + (280 * scale);
+      const pad = 70;
+      const ieeeBlue = "#1a6faf";
 
-        ctx.fillStyle = "white";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+      // ── IEEE icon (square, no whitespace) ──
+      const iconSize = 110; // the diamond icon itself, crisp
+      ctx.drawImage(logoImg, pad, pad, iconSize, iconSize);
 
-        const logoTargetWidth = 140 * scale;
-        const logoTargetHeight = (logoImg.height / logoImg.width) * logoTargetWidth;
+      // ── "IEEE" bold wordmark next to icon ──
+      ctx.fillStyle = ieeeBlue;
+      ctx.font = "900 90px 'Arial Black', Arial, sans-serif";
+      ctx.textAlign = "left";
+      const ieeeX = pad + iconSize + 16;
+      const ieeeY = pad + 80;
+      ctx.fillText("IEEE", ieeeX, ieeeY);
 
-        // Draw Logo at Top Left
-        ctx.drawImage(logoImg, 20 * scale, 20 * scale, logoTargetWidth, logoTargetHeight);
+      // ── "APSIT / Student / Branch" stacked text (no vertical divider) ──
+      const ieeeW = ctx.measureText("IEEE").width;
+      const branchX = ieeeX + ieeeW + 20;
+      ctx.font = "bold 30px Arial, sans-serif";
+      ctx.fillStyle = ieeeBlue;
+      ctx.fillText("APSIT",   branchX, pad + 30);
+      ctx.fillText("Student", branchX, pad + 65);
+      ctx.fillText("Branch",  branchX, pad + 100);
 
-        // Draw QR Code Centered
-        const qrX = (canvas.width - qrWidth) / 2;
-        const qrY = 20 * scale + logoTargetHeight + 20 * scale;
-        ctx.drawImage(qrImg, qrX, qrY);
+      // ── Blue underline ending at "Student" right edge + "IEEE Maharashtra Section" ──
+      const logoLineY = pad + iconSize + 14;
+      const logoLineEndX = branchX + Math.max(
+        ctx.measureText("APSIT").width,
+        ctx.measureText("Student").width,
+        ctx.measureText("Branch").width
+      );
+      ctx.strokeStyle = ieeeBlue;
+      ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(pad, logoLineY);
+      ctx.lineTo(logoLineEndX, logoLineY);
+      ctx.stroke();
 
-        // Draw Text below QR
-        let currentY = qrY + qrHeight + (40 * scale);
+      ctx.fillStyle = ieeeBlue;
+      ctx.font = "bold 28px Arial, sans-serif";
+      ctx.fillText("IEEE Maharashtra Section", pad, logoLineY + 34);
 
-        ctx.fillStyle = "black";
-        ctx.textAlign = "center";
+      // ── QR (right side, vertically centered) ──
+      const qrDisplayW = qrImg.width;
+      const qrDisplayH = qrImg.height;
+      const qrX = canvasW - pad - qrDisplayW;
+      const qrY = (canvasH - qrDisplayH) / 2;
+      ctx.drawImage(qrImg, qrX, qrY);
 
-        // Event Name
-        ctx.font = `bold ${24 * scale}px Inter`;
-        ctx.fillText(event.name, canvas.width / 2, currentY);
-        currentY += 40 * scale;
+      // ── Event name (black, left-center) ──
+      const textAreaCenterY = canvasH / 2 - 30;
 
-        // Participant Name
-        ctx.font = `bold ${20 * scale}px Inter`;
-        ctx.fillText(ticketData.participant_name, canvas.width / 2, currentY);
-        currentY += 30 * scale;
+      ctx.textAlign = "left";
+      ctx.fillStyle = "#111111";
+      ctx.font = "bold 88px Inter, Arial, sans-serif";
+      ctx.fillText(event.name, pad, textAreaCenterY);
 
-        // Other Details
-        ctx.font = `${16 * scale}px Inter`;
-        ctx.fillText(`Moodle ID: ${ticketData.moodle_id}`, canvas.width / 2, currentY);
-        currentY += 25 * scale;
+      // ── Venue (black, below event name) ──
+      ctx.fillStyle = "#333333";
+      ctx.font = "600 60px Inter, Arial, sans-serif";
+      ctx.fillText(event.venue || "", pad, textAreaCenterY + 100);
 
-        ctx.fillText(`Venue: ${event.venue}`, canvas.width / 2, currentY);
+      // ── Participant name | Moodle ID (bottom, black) ──
+      const bottomY = canvasH - 75;
+      ctx.fillStyle = "#111111";
+      ctx.font = "500 46px Inter, Arial, sans-serif";
+      ctx.textAlign = "left";
+      const nameText = ticketData.participant_name;
+      const moodleText = ticketData.moodle_id;
+      ctx.fillText(nameText, pad, bottomY);
 
-        const pngFile = canvas.toDataURL("image/png");
-        const link = document.createElement("a");
-        link.download = `ticket-${ticketData.participant_name}.png`;
-        link.href = pngFile;
-        link.click();
-      }
+      const nameW = ctx.measureText(nameText).width;
+      const sepX = pad + nameW + 36;
+      ctx.fillStyle = "#555555";
+      ctx.fillText("|", sepX, bottomY);
+      const moodleX = sepX + ctx.measureText("| ").width + 12;
+      ctx.fillStyle = "#111111";
+      ctx.fillText(moodleText, moodleX, bottomY);
+
+      // ── Export ──
+      const link = document.createElement("a");
+      link.download = `ticket-${ticketData.participant_name}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
     };
 
-    qrImg.onload = onImageLoad;
-    logoImg.onload = onImageLoad;
-    logoImg.crossOrigin = "anonymous"; // Prevents tainted canvas
-
+    const onLoad = () => { loaded++; if (loaded === 2) draw(); };
+    qrImg.onload = onLoad;
+    logoImg.onload = onLoad;
+    logoImg.crossOrigin = "anonymous";
     qrImg.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(svgData);
-    logoImg.src = "/ieee_logo.svg";
+    logoImg.src = "/ieee-icon.png";
   };
 
   if (loading) return <div className="container" style={{ textAlign: 'center', padding: '5rem' }}>Loading event details...</div>;
@@ -175,25 +217,137 @@ const EventRegistration = () => {
 
   if (success) {
     return (
-      <div className="container" style={{ padding: 'clamp(1.5rem, 5vw, 3rem) 1rem', display: 'flex', justifyContent: 'center' }}>
-        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} className="glass-card" style={{ width: '100%', maxWidth: '420px', textAlign: 'center' }}>
-          <h2 style={{ fontSize: 'clamp(1.4rem, 5vw, 1.8rem)', marginBottom: '0.5rem', color: '#22c55e', marginTop: 0 }}>You're In! 🎉</h2>
-          <p style={{ color: 'var(--text-muted)', marginBottom: '2rem', fontSize: '0.9rem' }}>Show this QR code at the entrance.</p>
-          <div ref={ticketRef} style={{ background: 'white', padding: '1rem', borderRadius: 'var(--radius-md)', marginBottom: '1.25rem', display: 'inline-block' }}>
-            <QRCodeSVG id="ticket-qr" value={ticketData.ticket_id} size={150} level="H" />
-            <div style={{ marginTop: '0.75rem', borderTop: '2px dashed #e5e7eb', paddingTop: '0.75rem', textAlign: 'left', color: 'black' }}>
-              <h3 style={{ fontSize: '1rem', marginBottom: '0.2rem', marginTop: 0 }}>{ticketData.participant_name}</h3>
-              <p style={{ fontSize: '0.8rem', opacity: 0.6, margin: 0 }}>{ticketData.moodle_id} · {ticketData.department} · Div {ticketData.division}</p>
-              <p style={{ fontSize: '0.75rem', opacity: 0.5, marginTop: '0.2rem', margin: 0 }}>{event.name}</p>
+      <div className="container" style={{ padding: 'clamp(1.5rem, 5vw, 3rem) 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.5rem' }}>
+        <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ textAlign: 'center' }}>
+          <h2 style={{ fontSize: 'clamp(1.4rem, 5vw, 1.8rem)', margin: 0, color: '#22c55e' }}>You're In! 🎉</h2>
+          <p style={{ color: 'var(--text-muted)', marginTop: '0.4rem', fontSize: '0.9rem' }}>Show this ticket at the entrance.</p>
+        </motion.div>
+
+        {/* ── Ticket Card — landscape, white, IEEE style ── */}
+        <motion.div
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.1 }}
+          style={{
+            background: '#ffffff',
+            borderRadius: '16px',
+            boxShadow: '0 8px 40px rgba(0,0,0,0.18)',
+            width: '100%',
+            maxWidth: '720px',
+            aspectRatio: '16/9',
+            display: 'grid',
+            gridTemplateRows: 'auto 1fr auto',
+            padding: '5% 6%',
+            boxSizing: 'border-box',
+            fontFamily: "'Inter', sans-serif",
+          }}
+        >
+          {/* Row 1 — IEEE logo: icon + composed text */}
+          <div style={{ display: 'inline-flex', flexDirection: 'column', gap: '5px', alignSelf: 'start' }}>
+            {/* Top row: icon + IEEE + APSIT Student Branch (no vertical divider) */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <img
+                src="/ieee-icon.png"
+                alt="IEEE"
+                style={{ height: '64px', width: 'auto', display: 'block', flexShrink: 0 }}
+              />
+              <span style={{
+                fontFamily: "'Arial Black', 'Arial', sans-serif",
+                fontWeight: 900,
+                fontSize: '3rem',
+                color: '#1a6faf',
+                letterSpacing: '-1px',
+                lineHeight: '64px',
+                display: 'block',
+              }}>IEEE</span>
+              {/* APSIT Student Branch — vertically centred to match icon height */}
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                justifyContent: 'center',
+                height: '64px',
+              }}>
+                <span style={{ fontFamily: "Arial, sans-serif", fontWeight: 800, fontSize: '0.82rem', color: '#1a6faf', lineHeight: 1.3 }}>APSIT</span>
+                <span style={{ fontFamily: "Arial, sans-serif", fontWeight: 800, fontSize: '0.82rem', color: '#1a6faf', lineHeight: 1.3 }}>Student</span>
+                <span style={{ fontFamily: "Arial, sans-serif", fontWeight: 800, fontSize: '0.82rem', color: '#1a6faf', lineHeight: 1.3 }}>Branch</span>
+              </div>
+            </div>
+            {/* Solid blue line — stretches to full logo group width automatically */}
+            <div style={{ height: '1.5px', background: '#1a6faf' }} />
+            {/* Maharashtra Section */}
+            <span style={{
+              fontFamily: "Arial, sans-serif",
+              fontWeight: 700,
+              fontSize: '0.75rem',
+              color: '#1a6faf',
+              letterSpacing: '0.01em',
+            }}>IEEE Maharashtra Section</span>
+          </div>
+
+          {/* Row 2 — Event info (left) + QR (right) */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1.5rem' }}>
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <div style={{
+                fontSize: 'clamp(1.2rem, 3.8vw, 2.2rem)',
+                fontWeight: 700,
+                color: '#111111',
+                lineHeight: 1.2,
+                marginBottom: '0.5rem',
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {event.name}
+              </div>
+              <div style={{
+                fontSize: 'clamp(0.85rem, 2.5vw, 1.45rem)',
+                fontWeight: 600,
+                color: '#333333',
+              }}>
+                {event.venue}
+              </div>
+            </div>
+
+            <div style={{ flexShrink: 0 }}>
+              <QRCodeSVG
+                id="ticket-qr"
+                value={ticketData.ticket_id}
+                size={100}
+                level="H"
+                style={{ display: 'block' }}
+              />
             </div>
           </div>
-          <button onClick={downloadTicket} className="btn btn-primary" style={{ width: '100%' }}>
-            <Download size={18} /> Download Ticket (PNG)
-          </button>
+
+          {/* Row 3 — Participant | Moodle ID (no divider line) */}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            fontSize: 'clamp(0.7rem, 1.8vw, 0.95rem)',
+            color: '#111111',
+            fontWeight: 500,
+          }}>
+            <span>{ticketData.participant_name}</span>
+            <span style={{ color: '#555555', fontSize: '1.1em' }}>|</span>
+            <span>{ticketData.moodle_id}</span>
+          </div>
         </motion.div>
+
+        <motion.button
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.25 }}
+          onClick={downloadTicket}
+          className="btn btn-primary"
+          style={{ width: '100%', maxWidth: '720px' }}
+        >
+          <Download size={18} /> Download Ticket (PNG)
+        </motion.button>
       </div>
     );
   }
+
 
   return (
     <div className="container" style={{ padding: 'clamp(1rem, 5vw, 3rem) 1rem' }}>
